@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<head>
+    <title>cs 3300 - Pro 2</title>
+    <style>
+    svg {
+      border: solid #ccc 1px;
+    }
+
+    text.before {
+      font-size: 0pt;
+      font-family: 'PT Sans', sans-serif;
+      fill: black;
+    }
+
+    text.after {
+      font-size: 7pt;
+      font-family: 'PT Sans', sans-serif;
+      fill: black;
+      opacity:0.5;
+    }
+
+    text.title{
+      font-size: 25pt;
+      font-family: 'Impact', sans-serif;
+      fill: black;
+      opacity:0.5;
+    }
+
+    .d3-tip {
+      line-height: 1.3;
+      padding: 6px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .d3-tip:after {
+      box-sizing: border-box;
+      display: inline;
+      font-size: 10px;
+      width: 100%;
+      line-height: 1;
+      color: rgba(0, 0, 0, 0.8);
+      content: "\25BC";
+      position: absolute;
+      text-align: center;
+    }
+
+    .d3-tip.n:after {
+      margin: -2px 0 0 0;
+      top: 100%;
+      left: 0;
+    }
+
+    .slider {
+      position: absolute;
+      width: 100%;
+      height: 6px;
+      border: solid 1px #ccc;
+      border-top-color: #aaa;
+      border-radius: 4px;
+      background-color: #f0f0f0;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+    </style>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <!--https://github.com/VACLab/d3-tip-->
+    <script src="d3-tip.js"></script>
+    <script src="d3.layout.cloud.js"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
+</head>
+<body>
+  <svg id="bubble" height="600" width="700"></svg>
+  <svg id="word" height="400" width="400"></svg>
+  <div id="choice">Year:</div>
+  <svg id="line" height="300" width="400"></svg>
+
+
+
+<script>
+
+  var rawdata;
+  var Byyear;
+  var year=0;
+
+  var format = d3.format(".2s");
+
+  var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+  var colorScale = d3.scaleQuantize()
+  .domain([0,9,8])
+  .range(['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6']);
+
+  var radiusScale = d3.scaleLinear()
+  .domain([0,5])
+  .range(['#bdbdbd','#ffffff']);
+
+  var types = ["Metal", "Pop/R&B", "Rock", "Jazz", "Rap", "Experimental", "Electronic", "Global", "Folk/Country"];
+
+  var pathGenerator = d3.line()
+    .x(function (d) { return xscale(d.year); })
+    .y(function (d) { return yscale(d3.mean(d.score)); });
+
+  var xscale = d3.scaleLinear().domain([1999,2017]).range([40,360]);
+  var yscale = d3.scaleLinear().domain([0,10]).range([260,40]);
+
+
+  var pack = d3.pack()
+      .size([width, height])
+      .padding(1.5);
+
+  d3.json("reviews.json",function(error,json){
+    rawdata = json;
+    console.log("load");
+
+    data = rawdata.map(function(k){
+      var add = new Date(1970, 1, 1);
+      add.setTime(add.getTime()+k.published);
+
+      if (types.indexOf(k.genres[0])<0){
+        types.push(k.genres[0]);
+      }
+
+      return{
+        album: k.album[0],
+        artist: k.artists[0],
+        year: add.getFullYear(),
+        score: d3.mean(k.score),
+        genre: types.indexOf(k.genres[0])-1
+      };
+
+    });
+
+    Byartist = d3.nest()
+      .key(function(k) { return k.artist; })
+      .entries(data);
+    //console.log(data);
+
+    Byyear = d3.nest()
+      .key(function(k) { return k.year; })
+      .key(function(k) { return k.artist; })
+      .rollup(function(v){
+        //console.log(v);
+        return{
+          album: v[0].album,
+          score: d3.mean(v, function(d) { return d.score; }),
+          genre: v[0].genre
+        }
+      })
+      .entries(data.sort(function(a,b){
+        return b.score - a.score;
+      }));
+
+    Byyear = Byyear.sort(function(a,b){
+      return a.key - b.key;
+    });
+
+    var slider = d3.select("#choice");
+
+    slider.append("input")
+    .attr("type", "range")
+    .attr("class", "slider")
+    .attr("id", "slider")
+    .attr("min", "1999")
+    .attr("max", "2017")
+    .attr("step", "1")
+    .attr("value", "1999")
+    .style("width", "500px")
+    .on("input", function () {
+      year = Number(this.value)-1999;
+      showBubble();
+      showcloud();
+    });
+
+    showBubble();
+    showcloud();
+
+});
+
+function showBubble(){
+    d3.select("#bubble").selectAll("*").remove();
+
+    Byyear[year].values = Byyear[year].values.slice(1,100);
+
+    basic = d3.hierarchy({
+        id: "root", values: [Byyear[year]]
+    },
+    function (d) {return d.values})
+    .sum(function (d) {
+      if(d.value)
+      return Math.exp(d.value.score);})
+    .sort(null);
+
+    pack(basic);
+
+    svg = d3.select("#bubble");
+
+    svg.append("text")
+    .attr("class","title")
+    .attr("x",50)
+    .attr("y",50)
+    .attr("text-anchor", "middle")
+    .attr("alignment-baseline", "central")
+    .text(year+1999);
+
+    var bubble = svg.selectAll(".bubbles")
+      .data(basic.descendants().slice(0,100))
+      .enter().append("g")
+      .attr("class", "bubbles");
+
+    bubble.append("circle")
+    .attr("r", function (d) {
+        if(d.r < 200) return d.r})
+    .attr("cx", function (d) {return d.x})
+    .attr("cy", function (d) {return d.y})
+    .style("fill", "white")
+        .transition()
+        .duration(1000)
+    .attr("r", function (d) {
+      if(d.r < 200) return d.r})
+    .attr("cx", function (d) {return d.x})
+    .attr("cy", function (d) {return d.y})
+    .style("opacity","0.5")
+    .style("fill", function(d) {
+      if(d.data.value) return colorScale(d.data.value.genre);
+    });
+
+    bubble.append("text")
+    .attr("class","after")
+    .text(function(d){if(d.data.value) return d.data.key;})
+    .attr("x",function (d) {return d.x})
+    .attr("y",function (d) {return d.y})
+    .style("opacity","0")
+        .transition()
+        .duration(1000)
+    .text(function(d){
+      if(d.data.value) return d.data.key;})
+    .attr("x",function (d) {return d.x})
+    .attr("y",function (d) {return d.y})
+    .style("text-anchor", "middle")
+    .style("opacity","0.8");
+
+    var label = svg.selectAll(".label")
+    .data(types)
+    .enter().append("g")
+    .attr("class","label");
+
+    label.append("rect")
+    .attr("x","20")
+    .attr("y",function(d,i){return 15*i+450;})
+    .attr("width","20")
+    .attr("height","10")
+    .style("opacity","0.7")
+    .style("fill",function(d,i){return colorScale(i);});
+
+    label.append("text")
+    .attr("class","after")
+    .attr("x","50")
+    .attr("y",function(d,i){return 15*i+457;})
+    .text(function(d,i){return types[i];})
+    .style("text-anchor", "left")
+    .style("alignment-baseline","center");
+
+    var size = {};
+
+    basic.children[0].children.forEach(function(d){
+      size[format( Number(d.data.value.score))] = d.r;
+    })
+
+    var sorted = [];
+
+    var keys = Object.keys(size);
+    keys.sort(function(a,b){
+      return b-a;
+    });
+
+    for (var i=0; i<keys.length; i++) {
+      if(i%6 == 0 && sorted.length<4){
+        var key = keys[i];
+        var value = size[key];
+        var new_size = {"id":key,"radius":value};
+        sorted.push(new_size);
+      }
+    }
+
+    var radius = svg.selectAll(".radius")
+      .data(sorted)
+      .enter().append("g")
+      .attr("class", "radius");
+
+    radius.append("circle")
+    .attr("r", function (d) {return d.radius})
+    .attr("cx", "630")
+    .attr("cy", function (d) {return 570-d.radius})
+    .style("fill", function (d,i) {return radiusScale(i);})
+    .style("stroke", "#b0b0b0");
+
+    radius.append("text")
+    .attr("x", "630")
+    .attr("y", function (d) {return 570-2*d.radius})
+    .text(function(d){return d.id})
+    .attr("class","after")
+    .style("text-anchor", "middle")
+    .style("alignment-baseline","center");
+
+    radius.append("text")
+    .attr("class","after")
+    .attr("x","630")
+    .attr("y","580")
+    .attr("text-anchor", "middle")
+    .attr("alignment-baseline", "central")
+    .text("Score Legend");
+
+    d3.selectAll(".bubbles").on( "mouseover",function(){
+      var current = this;
+      d3.selectAll(".bubbles").style("opacity",function(){
+        return (this === current) ? 1.2 : 0.4;});
+    });
+
+    d3.selectAll(".bubbles").on( "mouseout",function(){
+      d3.selectAll(".bubbles").style("opacity","1");
+    });
+
+    d3.selectAll(".bubbles").on( "click",function(d){
+      showLine(d);
+    });
+
+}
+
+function showLine(d){
+    var line = d3.select("#line");
+    line.selectAll("*").remove();
+
+    chosen_artist = d.data.key;
+    Byartist.forEach(function(item){
+      if(item.key===chosen_artist){
+        input = item;
+      }
+    });
+
+    input.values.sort(function(a,b){return a.year - b.year;});
+
+    clean_data = cleandata(input);
+
+    var tool_tip = d3.tip()
+      .attr("class", "d3-tip")
+      .offset([-8, 0])
+      .html(function(d){
+        return getinfo(clean_data,d.year)});
+
+    line.call(tool_tip);
+
+    var xaxis = d3.axisBottom(xscale);
+    line.append("g").attr("transform","translate(0,260)").call(xaxis.tickFormat(d3.format(".0f")));
+    var yaxis = d3.axisLeft(yscale);
+    line.append("g").attr("transform","translate(40,0)").call(yaxis.tickFormat(d3.format(".0f")));
+
+    var path = pathGenerator(clean_data);
+
+    line.append("path")
+    .attr("d", path)
+    .attr("fill", "none")
+    .attr("stroke", "black")
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("stroke-width", 1);
+
+    line.append("text")
+    .attr("x",150)
+    .attr("y",30)
+    .attr("text-anchor", "middle")
+    .attr("alignment-baseline", "central")
+    .text(chosen_artist);
+
+    var points = line.selectAll(".points")
+    .data(clean_data)
+    .enter().append("rect")
+    .attr("x", function(d){return xscale(d.year)-2.5;})
+    .attr("y", function(d){return yscale(d3.mean(d.score))-2.5;})
+    .attr("width","5")
+    .attr("height","5")
+    .style("fill",function(d){return colorScale(d.genre)})
+      .on('mouseover', tool_tip.show)
+      .on('mouseout', tool_tip.hide);
+
+}
+
+function getinfo(d,time){
+  var info = "";
+  d.forEach(function(item){
+    if(item.year == time){
+      info += "Year: "+ time+ "<br>";
+      info += "Album: "+ item.album + "<br>";
+      info += "Score: "+ item.score + "<br>";
+    }
+  })
+
+  return info;
+}
+
+function cleandata(input){
+    var current = 0;
+    var album_list = [];
+    var score_list = [];
+    var genre_list = [];
+    var clean_data = [];
+
+    input.values.forEach(function(item){
+      if (current == 0){
+        current = item.year;
+        album_list.push(item.album);
+        score_list.push(item.score);
+      }
+      else if(current == item.year){
+        album_list.push(item.album);
+        score_list.push(item.score);
+      }
+      else{
+        clean_data.push({
+          year:current,
+          artist:chosen_artist,
+          album:album_list,
+          score:score_list,
+          genre:item.genre
+        });
+        album_list = [];
+        score_list = [];
+        current = item.year;
+        album_list.push(item.album);
+        score_list.push(item.score);
+      }
+    });
+    clean_data.push({
+      year:current,
+      artist:chosen_artist,
+      album:album_list,
+      score:score_list,
+      genre:input.values[input.values.length-1].genre
+    });
+
+    return clean_data;
+}
+
+function showcloud(){
+
+  d3.select("#word").selectAll("*").remove();
+
+  d3.csv("tdm_bydecade.csv",function(error,data){
+    frequency_list = data;
+    var wordByyear = frequency_list.map(function(d){
+      //console.log(d);
+      return {
+        text:d.keyword,
+        num:[Number(d.X1990),Number(d.X2000),Number(d.X2010)]
+      }
+    })
+
+    wordByyear.sort(function(a,b){
+        return b.num[parseInt((year)/10)] - a.num[parseInt((year)/10)];
+      })
+
+    wordByyear = wordByyear.slice(0,100);
+
+    wordtoDraw = wordByyear.map(function(d) {
+      return {text: d.text, size: d.num[parseInt(year/10)]};
+    });
+
+
+    var wordColorScale = d3.scaleOrdinal(d3.schemeCategory10);
+    var wordSizeScale = d3.scaleLinear()
+    .domain([d3.min(wordtoDraw,function(d){return d.size}),d3.max(wordtoDraw,function(d){return d.size})])
+    .range([5,90]);
+
+    var layout = cloud()
+    .size([400,400])
+    .words(wordtoDraw)
+    .padding(1)
+    .rotate(function() { return Math.random() > 0.5 ? 0 : 90; })
+    .font("Impact")
+    .fontSize(function(d) { return wordSizeScale(d.size); })
+    .on("end", draw)
+    .start();
+
+    function draw(words) {
+      wordcloud = d3.select("#word")
+        .append("g")
+        .attr("transform", "translate(" + 400 / 2 + "," + 400 / 2 + ")");
+
+      wordcloud.selectAll("text")
+        .data(words)
+        .enter().append("text")
+        .style("opacity","0")
+        .transition()
+        .duration(500)
+        .style("font-size", function(d) { return d.size + "px"; })
+        .style("font-family", "Impact")
+        .style("fill", function(d, i) { return wordColorScale(d.size); })
+        .style("opacity","0.7")
+        .attr("text-anchor", "middle")
+        .attr("transform", function(d) {
+          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+        })
+        .text(function(d) { return d.text; });
+    }
+  });
+}
+
+</script>
+</body>
