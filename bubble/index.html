@@ -121,7 +121,7 @@
       .padding(1.5);
 
   //load reviews data
-  d3.json("reviews.json",function(error,json){
+  d3.json("./reviews.json",function(error,json){
     rawdata = json;
 
     data = rawdata.map(function(k){
@@ -209,7 +209,7 @@
 
   });
 
-  d3.csv("tdm_bydecade.csv",function(error,data){
+  d3.csv("./tdm_bydecade.csv",function(error,data){
     frequency_list = data;
     var wordByyear = frequency_list.map(function(d){
       return {
