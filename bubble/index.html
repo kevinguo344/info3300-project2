@@ -86,9 +86,11 @@
   var rawdata;
   var Byyear;
   var Byartist;
+  var wordtoDraw;
 
   var year=0;
   var average;
+  var limit = [];
 
   var format = d3.format(".2s");
 
@@ -96,8 +98,8 @@
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
-  var colorScale = d3.scaleQuantize()
-  .domain([0,9,8])
+  var colorScale = d3.scaleLinear()
+  .domain([0,1,2,3,4,5,6,7,8])
   .range(['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6']);
 
   var radiusScale = d3.scaleLinear()
@@ -135,10 +137,16 @@
         artist: k.artists[0],
         year: add.getFullYear(),
         score: d3.mean(k.score),
-        genre: types.indexOf(k.genres[0])-1
+        genre: types.indexOf(k.genres[0])
       };
 
     });
+
+    data.sort(function(a,b){
+        return b.score - a.score;
+      });
+
+    getbound(data);
 
     //group data by artist
     Byartist = d3.nest()
@@ -149,22 +157,31 @@
     //group data by year, order by year and score(desc)
     Byyear = d3.nest()
       .key(function(k) { return k.year; })
+      .key(function(k) { return k.genre; })
       .key(function(k) { return k.artist; })
       .rollup(function(v){
         //console.log(v);
         return{
           //when drawing bubbles, each artist has a unique bubble -> one score(mean of all albums) and one genre(the first album)
-          score: d3.mean(v, function(d) { return d.score; }),
+          score: d3.mean(v, function(d) {return d.score;}),
           genre: v[0].genre
         }
       })
-      .entries(data.sort(function(a,b){
-        return b.score - a.score;
-      }));
+      .entries(data);
 
     Byyear = Byyear.sort(function(a,b){
       return a.key - b.key;
     });
+
+   Byyear.forEach(function(year){
+      year.values.forEach(function(genre){
+        //console.log(genre);
+        var n = genre.values.filter(function(d){return d.value.score > limit[Number(year.key)-1999];})
+        genre.values = n;
+      })
+    })
+
+    //console.log(Byyear);
 
     average = getaverage();
 
@@ -190,13 +207,33 @@
     showBubble();
     showcloud();
 
-});
+  });
+
+  d3.csv("tdm_bydecade.csv",function(error,data){
+    frequency_list = data;
+    var wordByyear = frequency_list.map(function(d){
+      return {
+        text:d.keyword,
+        num:[Number(d.X1990),Number(d.X2000),Number(d.X2010)]
+      }
+    })
+
+    wordByyear.sort(function(a,b){
+        return b.num[parseInt((year)/10)] - a.num[parseInt((year)/10)];
+      })
+
+    wordByyear = wordByyear.slice(0,100);
+
+    wordtoDraw = wordByyear.map(function(d) {
+      return {text: d.text, size: d.num[parseInt(year/10)]};
+    });
+  });
 
 function showBubble(){
     d3.select("#bubble").selectAll("*").remove();
 
     //data processing
-    Byyear[year].values = Byyear[year].values.slice(1,100);
+    //Byyear[year].values = Byyear[year].values.slice(1,100);
 
     basic = d3.hierarchy({
         id: "root", values: [Byyear[year]]
@@ -228,20 +265,22 @@ function showBubble(){
       .attr("class", "bubbles");
 
     bubble.append("circle")
-    .attr("r", function (d) {
-        if(d.r < 200) return d.r})
+    .attr("r", function (d) {return d.r;})
     .attr("cx", function (d) {return d.x})
     .attr("cy", function (d) {return d.y})
     .style("fill", "white")
         .transition()
         .duration(1000)
-    .attr("r", function (d) {
-      if(d.r < 200) return d.r})
+    .attr("r", function (d) {if(d.depth>1) return d.r})
     .attr("cx", function (d) {return d.x})
     .attr("cy", function (d) {return d.y})
     .style("opacity","0.5")
     .style("fill", function(d) {
-      if(d.data.value) return colorScale(d.data.value.genre);
+      if(d.data.value){
+        return colorScale(d.data.value.genre);}
+      else{
+        return "#bbbbbb";
+        }
     });
 
     bubble.append("text")
@@ -286,7 +325,12 @@ function showBubble(){
     var sorted = [];
 
     basic.children[0].children.forEach(function(d){
-      size[format(Number(d.data.value.score))] = d.r;
+      if (d.r!=0)
+
+        d.children.forEach(function(i){
+          size[format(Number(i.data.value.score))] = i.r;
+  })
+
     })
 
     var keys = Object.keys(size);
@@ -465,8 +509,10 @@ function getaverage(){
         var current = 0;
         var num = 0;
         year.values.forEach(function(d){
-            current += d.value.score;
+          d.values.forEach(function(i){
+            current += i.value.score;
             num += 1;
+            })
         })
         average.push({
             year:i+1999,
@@ -474,6 +520,29 @@ function getaverage(){
         });
     })
     return average;
+}
+
+function getbound(data){
+  bond = d3.nest()
+      .key(function(k) { return k.year; })
+      .key(function(k) { return k.artist; })
+      .rollup(function(v){
+        //console.log(v);
+        return{
+          //when drawing bubbles, each artist has a unique bubble -> one score(mean of all albums) and one genre(the first album)
+          score: d3.mean(v, function(d) { return d.score; }),
+          genre: v[0].genre
+        }
+      })
+      .entries(data);
+
+    bond = bond.sort(function(a,b){
+      return a.key - b.key;
+    });
+
+    bond.forEach(function(year,i){
+        limit.push(format(year.values[90].value.score+0.1));
+    })
 }
 
 function linebasic(){
@@ -519,31 +588,12 @@ function showcloud(){
 
   d3.select("#word").selectAll("*").remove();
 
-  d3.csv("tdm_bydecade.csv",function(error,data){
-    frequency_list = data;
-    var wordByyear = frequency_list.map(function(d){
-      return {
-        text:d.keyword,
-        num:[Number(d.X1990),Number(d.X2000),Number(d.X2010)]
-      }
-    })
-
-    wordByyear.sort(function(a,b){
-        return b.num[parseInt((year)/10)] - a.num[parseInt((year)/10)];
-      })
-
-    wordByyear = wordByyear.slice(0,100);
-
-    wordtoDraw = wordByyear.map(function(d) {
-      return {text: d.text, size: d.num[parseInt(year/10)]};
-    });
-
-    var wordColorScale = d3.scaleOrdinal(d3.schemeCategory10);
-    var wordSizeScale = d3.scaleLinear()
+  var wordColorScale = d3.scaleOrdinal(d3.schemeCategory10);
+  var wordSizeScale = d3.scaleLinear()
     .domain([d3.min(wordtoDraw,function(d){return d.size}),d3.max(wordtoDraw,function(d){return d.size})])
     .range([5,90]);
 
-    var layout = cloud()
+  var layout = cloud()
     .size([400,400])
     .words(wordtoDraw)
     .padding(1)
@@ -553,28 +603,27 @@ function showcloud(){
     .on("end", draw)
     .start();
 
-    function draw(words) {
-      wordcloud = d3.select("#word")
-        .append("g")
-        .attr("transform", "translate(" + 400 / 2 + "," + 400 / 2 + ")");
+  function draw(words) {
+    wordcloud = d3.select("#word")
+      .append("g")
+      .attr("transform", "translate(" + 400 / 2 + "," + 400 / 2 + ")");
 
-      wordcloud.selectAll("text")
-        .data(words)
-        .enter().append("text")
-        .style("opacity","0")
-        .transition()
-        .duration(500)
-        .style("font-size", function(d) { return d.size + "px"; })
-        .style("font-family", "Impact")
-        .style("fill", function(d, i) { return wordColorScale(d.size); })
-        .style("opacity","0.7")
-        .attr("text-anchor", "middle")
-        .attr("transform", function(d) {
-          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-        })
-        .text(function(d) { return d.text; });
-    }
-  });
+    wordcloud.selectAll("text")
+      .data(words)
+      .enter().append("text")
+      .style("opacity","0")
+      .transition()
+      .duration(500)
+      .style("font-size", function(d) { return d.size + "px"; })
+      .style("font-family", "Impact")
+      .style("fill", function(d, i) { return wordColorScale(d.size); })
+      .style("opacity","0.7")
+      .attr("text-anchor", "middle")
+      .attr("transform", function(d) {
+        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+      })
+      .text(function(d) { return d.text; });
+  }
 }
 
 </script>
