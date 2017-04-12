@@ -173,7 +173,9 @@
       return a.key - b.key;
     });
 
-   Byyear.forEach(function(year){
+    average = getaverage();
+
+    Byyear.forEach(function(year){
       year.values.forEach(function(genre){
         //console.log(genre);
         var n = genre.values.filter(function(d){return d.value.score > limit[Number(year.key)-1999];})
@@ -182,8 +184,6 @@
     })
 
     //console.log(Byyear);
-
-    average = getaverage();
 
     //draw slider
     var slider = d3.select("#choice");
