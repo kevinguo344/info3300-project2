@@ -120,6 +120,27 @@
       .size([width, height])
       .padding(1.5);
 
+  //load cloud data
+  d3.csv("./tdm_bydecade.csv",function(error,data){
+    frequency_list = data;
+    var wordByyear = frequency_list.map(function(d){
+      return {
+        text:d.keyword,
+        num:[Number(d.X1990),Number(d.X2000),Number(d.X2010)]
+      }
+    })
+
+    wordByyear.sort(function(a,b){
+        return b.num[parseInt((year)/10)] - a.num[parseInt((year)/10)];
+      })
+
+    wordByyear = wordByyear.slice(0,100);
+
+    wordtoDraw = wordByyear.map(function(d) {
+      return {text: d.text, size: d.num[parseInt(year/10)]};
+    });
+  });
+
   //load reviews data
   d3.json("./reviews.json",function(error,json){
     rawdata = json;
@@ -209,31 +230,8 @@
 
   });
 
-  d3.csv("./tdm_bydecade.csv",function(error,data){
-    frequency_list = data;
-    var wordByyear = frequency_list.map(function(d){
-      return {
-        text:d.keyword,
-        num:[Number(d.X1990),Number(d.X2000),Number(d.X2010)]
-      }
-    })
-
-    wordByyear.sort(function(a,b){
-        return b.num[parseInt((year)/10)] - a.num[parseInt((year)/10)];
-      })
-
-    wordByyear = wordByyear.slice(0,100);
-
-    wordtoDraw = wordByyear.map(function(d) {
-      return {text: d.text, size: d.num[parseInt(year/10)]};
-    });
-  });
-
 function showBubble(){
     d3.select("#bubble").selectAll("*").remove();
-
-    //data processing
-    //Byyear[year].values = Byyear[year].values.slice(1,100);
 
     basic = d3.hierarchy({
         id: "root", values: [Byyear[year]]
@@ -326,11 +324,9 @@ function showBubble(){
 
     basic.children[0].children.forEach(function(d){
       if (d.r!=0)
-
         d.children.forEach(function(i){
           size[format(Number(i.data.value.score))] = i.r;
-  })
-
+        })
     })
 
     var keys = Object.keys(size);
@@ -339,7 +335,7 @@ function showBubble(){
     });
 
     for (var i=0; i<keys.length; i++) {
-      if(i%5 == 0 && sorted.length<4){
+      if(i%4 == 0 && sorted.length<4){
         var key = keys[i];
         var value = size[key];
         var new_size = {"id":key,"radius":value};
