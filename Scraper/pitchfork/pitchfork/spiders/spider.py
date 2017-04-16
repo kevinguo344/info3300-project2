@@ -29,7 +29,8 @@ class pitchforkReviews(scrapy.Spider):
 				'artists': artist,
 				'album': album,
 				'score': scores,
-				'best_new_music': item.get('tombstone',{}).get('bnm')
+				'best_new_music': item.get('tombstone',{}).get('bnm'),
+				'best_new_reissue': item.get('tombstone',{}).get('bnr')
 			}
 		if data['next']:
 			nextURL = data['next']

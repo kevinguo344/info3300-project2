@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.7.4/d3.js"></script>
+	<title></title>
+</head>
+<body>
+	<script type="text/javascript">
+		var reviewData;
+		var chartData;
+
+		var reviews = [];
+		var pitchforkArtists = [];
+		var years = [];
+		var genre;
+
+		var charts;
+		var chartPositions = [];
+
+		var merged = [];
+
+		formatDate = d3.timeFormat("%m-%d-%Y");
+
+		//parse through pitchfork data
+		d3.json("reviews.json", function (error, json) {
+			reviewData = json;
+			parseDate = d3.timeParse("%m-%d-%Y");
+
+			reviews = reviewData.map(function(k){
+				var add = new Date(1970, 1, 1);
+				add.setTime(add.getTime()+k.published);
+				return{
+					album: k.album[0],
+					artist: k.artists[0],
+					date: parseDate(formatDate(add)),
+					score: k.score[0],
+					genre: k.genres
+				};
+			});
+
+			reviews.sort(function(a,b){
+				return b.score - a.score;
+			});
+			
+			pitchforkArtists = d3.nest()
+				.key(function(k) { return k.artist; })
+				.rollup(function(k) { return leaves.length; })
+				.entries(reviews);
+
+			years = d3.nest()
+				.key(function(k) { return k.date.getFullYear(); })
+				.key(function(k) { return k.artist; })
+				.rollup(function(v){
+					return{
+						score: d3.mean(v, function(d) {return d.score;}),
+						genre: v[0].genre
+					}
+				})
+				.entries(reviews);
+			years = years.sort(function(a,b){
+				return a.key - b.key;
+			});
+		});
+
+		d3.tsv("us_billboard.tsv", function (error, tsv) {
+			chartData = tsv;
+			parseDate = d3.timeParse("%Y-%m-%d");
+
+			charts = chartData.map(function(k) {
+				return{
+					artist: k.artist,
+					title: k.title,
+					peak_position: k.peak_position,
+					total_weeks: k.total_weeks
+				}
+			});
+
+			chartPositions = d3.nest()
+				.key(function(k) { return k.artist; })
+				.key(function(k) { return k.title; })
+				.entries(chartData.map(function (k) {
+					return{
+						artist: k.artist,
+						title: k.title,
+						peak_position: k.peak_position,
+						total_weeks: k.total_weeks
+					}
+				}));
+		});
+
+		pitchforkArtists.forEach(function(k) {
+			var artist = k.key;
+			chartPositions.forEach(function(j) {
+				if(artist.toUpperCase() === j.key){
+					
+				}
+			});
+		});
+
+	</script>
+</body>
+</html>
