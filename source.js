@@ -112,9 +112,11 @@ d3.tsv("us_billboard.tsv", function (error, tsv) {
 				non_charters.push(a);
 			}
 			tot_score += parseFloat(a.score);
+			/*
 			if(a.best_new_music){
 				num_bnm++;
 			}
+			*/
 		});
 
 		var insert = {
@@ -124,7 +126,7 @@ d3.tsv("us_billboard.tsv", function (error, tsv) {
 			non_charters: non_charters,
 			avg_score: tot_score/albums.length,
 			top_chart_position: top_chart_position,
-			num_bnm: num_bnm
+			//num_bnm: num_bnm
 		}
 		merged.push(insert);
 	});
@@ -141,7 +143,22 @@ d3.tsv("us_billboard.tsv", function (error, tsv) {
 			topScorers.push(k);
 		}
 	});
-	
+	var favorites = d3.select("#favorites");
+	topScorers.forEach(function(a) {
+		var svg1 = favorites.append("svg").attr("width", 200).attr("height", 150);
+		svg1.append("circle")
+			.attr("cx",100).attr("cy",75).attr("r", 50).attr("class", "rating")
+			.style("stroke-width", 6).style("stroke", "black").style("fill", "none");
+		svg1.append("text")
+			.text(d3.format(".1f")(a.avg_score)).attr("x", 100).attr("y", 75).attr("class", "ratingC")
+			.style("text-anchor", "middle").style("dominant-baseline", "middle")
+			.style("font-family","Poppins").style("font-weight","600").style("font-size","24px");
+		svg1.append("text")
+			.text(a.artist).attr("x", "75").attr("y","100")
+			.style("text-anchor", "middle")
+			.style("font-family", "");
+	});
+
 });
 
 function intersect(pitchforkAlbums, billboardAlbums) {
