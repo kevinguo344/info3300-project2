@@ -2,12 +2,15 @@ html{
 	font-family: 'Poppins', sans-serif;
 	font-family: 'Neuton', serif;
 }
-.ratingC{
+.header{
+	font-family: 'Neuton';
+}
+.rating{
 	stroke-width: 6;
 	stroke: black;
 	fill: none;
 }
-.rating{
+.ratingC{
 	font-family: 'Poppins';
 	text-anchor: middle;
 	dominant-baseline: middle;
@@ -15,5 +18,9 @@ html{
 	font-weight: 600;
 }
 .artist{
-
+	text-anchor: middle;
+	font-family: 'Neuton';
+}
+.artistIMG{
+	clip-path: circle(50px at center);
 }

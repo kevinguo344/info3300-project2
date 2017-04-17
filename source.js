@@ -135,30 +135,19 @@ d3.tsv("us_billboard.tsv", function (error, tsv) {
 		return b.avg_score - a.avg_score;
 	})
 
-	var count = 24;
+	var count = 12;
 	var i = 0;
 	merged.forEach(function(k) {
-		if(k.albums.length > 5 && i < count){
+		if(k.albums.length > 3 && i < count){
 			i++;
 			topScorers.push(k);
 		}
 	});
-	var favorites = d3.select("#favorites");
+	
+	//renders artists components
 	topScorers.forEach(function(a) {
-		var svg1 = favorites.append("svg").attr("width", 200).attr("height", 150);
-		svg1.append("circle")
-			.attr("cx",100).attr("cy",75).attr("r", 50).attr("class", "rating")
-			.style("stroke-width", 6).style("stroke", "black").style("fill", "none");
-		svg1.append("text")
-			.text(d3.format(".1f")(a.avg_score)).attr("x", 100).attr("y", 75).attr("class", "ratingC")
-			.style("text-anchor", "middle").style("dominant-baseline", "middle")
-			.style("font-family","Poppins").style("font-weight","600").style("font-size","24px");
-		svg1.append("text")
-			.text(a.artist).attr("x", "75").attr("y","100")
-			.style("text-anchor", "middle")
-			.style("font-family", "");
+		renderArtistModule("#favorites", a);
 	});
-
 });
 
 function intersect(pitchforkAlbums, billboardAlbums) {
@@ -192,4 +181,21 @@ function intersect(pitchforkAlbums, billboardAlbums) {
 		}
 	});
 	return albums;
+}
+
+function renderArtistModule(div, artist) {
+	var div = d3.select(div);
+	var svg = div.append("svg").attr("width", 300).attr("height", 150).style("background","grey").style("margin","5px");
+	svg.append("circle")
+		.attr("cx",200).attr("cy",75).attr("r", 50).attr("class", "rating")
+	svg.append("text")
+		.text(d3.format(".1f")(artist.avg_score)).attr("x", 200).attr("y", 75).attr("class", "ratingC")
+		.style("text-anchor", "middle").style("dominant-baseline", "middle")
+	svg.append("text")
+		.text(artist.artist).attr("x", "75").attr("y","140")
+		.style("text-anchor", "middle");
+	svg.append("svg:image").attr("class","artistIMG")
+		.attr("xlink:href", "/images/" + artist.artist + ".jpg")
+		.attr("width", 100).attr("height", 100)
+		.attr("x", 25).attr("y", 25);
 }
