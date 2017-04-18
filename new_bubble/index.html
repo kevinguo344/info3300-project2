@@ -77,9 +77,10 @@
 <body>
 
   <svg id="bubble" height="600" width="700"></svg>
-  <svg id="word" height="400" width="400"></svg>
   <div id="choice">Year:</div>
   <svg id="line" height="300" width="400"></svg>
+  <button id="clear">Clear</button>
+   <svg id="word" height="400" width="400"></svg>
 
 <script>
 
@@ -222,11 +223,21 @@
       year = Number(this.value)-1999;
       showBubble();
       showcloud();
+      line = d3.select("#line").selectAll("*").remove();
+      linebasic();
     });
+
+    var clear = d3.select("#clear").on( "click",function(){
+      var line = d3.select("#line");
+      line.selectAll("*").remove();
+      linebasic();
+    });
+
 
     //initial output
     showBubble();
     showcloud();
+    linebasic();
 
   });
 
@@ -373,7 +384,7 @@ function showBubble(){
     .text("Score Legend");
 
     //show line graph with average score in each year
-    linebasic();
+    //linebasic();
 
     d3.selectAll(".bubbles").on( "mouseover",function(){
       var current = this;
@@ -413,22 +424,22 @@ function showLine(d){
 
     line.call(tool_tip);
 
-    linebasic();
-
     var path = pathGenerator(clean_data);
 
     line.append("path")
+
     .attr("d", path)
     .attr("fill", "none")
     .attr("stroke", "black")
     .attr("stroke-width", 1);
 
-    line.append("text")
-    .attr("x",150)
-    .attr("y",30)
-    .attr("text-anchor", "middle")
+/*    line.append("text")
+    .attr("x",function(d){return xscale(clean_data[0].year)+10;})
+    .attr("y",function(d){return yscale(d3.mean(clean_data[0].score))-10;})
+    .attr("text-anchor", "left")
     .attr("alignment-baseline", "central")
-    .text(chosen_artist);
+    .text(chosen_artist)
+    .style("font-size","10");*/
 
     var points = line.selectAll(".points")
     .data(clean_data)
@@ -446,9 +457,11 @@ function showLine(d){
 function getinfo(d,time){
   var info = "";
   d.forEach(function(item){
+    console.log(item);
     if(item.year == time){
-      info += "Year: "+ time+ "<br>";
+      info += "Artist: "+ item.artist+ "<br>";
       info += "Album: "+ item.album + "<br>";
+      info += "Year: "+ time+ "<br>";
       info += "Score: "+ item.score + "<br>";
     }
   })
@@ -537,13 +550,12 @@ function getbound(data){
     });
 
     bond.forEach(function(year,i){
-        limit.push(format(year.values[90].value.score+0.1));
+        limit.push(format(year.values[102].value.score+0.1));
     })
 }
 
 function linebasic(){
     var line = d3.select("#line");
-    line.selectAll("*").remove();
 
     var xaxis = d3.axisBottom(xscale);
     line.append("g").attr("transform","translate(0,260)").call(xaxis.tickFormat(d3.format(".0f")));
