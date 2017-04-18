@@ -233,39 +233,20 @@ function renderArtistModule(div, artist) {
 	svg.append("text").attr("class", "label")
  		.text("Albums").attr("x", "300").attr("y","25")
 		.style("alignment-baseline", "hanging");
-	if(artist.albums.length < 6){
-		aX = 300;
-		var aY = 57;
-		artist.albums.forEach(function (a) {
-			var color = "black";
-			if(a.best_new_music){
-				color = "red";
-			}
-			svg.append("circle")
-				.attr("cx", aX)
-				.attr("cy", aY)
-				.attr("r", 3)
-				.style("fill", color);
-			aY += 12;
-		});
-	}
-	else{
-		aX = 292;
-		var aY = 57;
-		for(var i = 0; i < artist.albums.length; i++){
-			var color = "black";
-			if(artist.albums[i].best_new_music){
-				color = "red";
-			}
-			if(i == 5){aX = 308; aY = 57;}
-			svg.append("circle")
-				.attr("cx", aX)
-				.attr("cy", aY)
-				.attr("r",3)
-				.style("fill", color);
-			aY += 12;
+	aX = 300;
+	var aY = 54;
+	artist.albums.forEach(function (a) {
+		var color = "black";
+		if(a.best_new_music){
+			color = "red";
 		}
-	}
+		svg.append("circle")
+			.attr("cx", aX)
+			.attr("cy", aY)
+			.attr("r", 3)
+			.style("fill", color);
+		aY += 12;
+	});
 }
 
 function rank(){
