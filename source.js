@@ -11,6 +11,7 @@ var chartPositions = [];
 
 var merged = [];
 var topScorers = [];
+var nonOneHits = [];
 
 var year = 1999;
 
@@ -38,7 +39,7 @@ d3.queue()
 	    .attr("min", "1999")
 	    .attr("max", "2016")
 	    .attr("step", "1")
-	    .attr("value", "1999")
+	.attr("value", "1999")
 	    .style("width", "500px")
 	    .on("input", function () {
 	        year = Number(this.value);
@@ -124,6 +125,7 @@ function data_process_B(tsv) {
         var tot_score = 0;
         var top_chart_position = 100000;
         var num_bnm = 0;
+        var num_top_charted = 0;
 
         var hasCharted = false;
 
@@ -138,6 +140,7 @@ function data_process_B(tsv) {
         albums.forEach(function(a) {
             if(a.top_chart_position != null){
                 charters.push(a);
+                num_top_charted++;
                 if(a.top_chart_position < top_chart_position){
                     top_chart_position = a.top_chart_position;
                 }
@@ -159,6 +162,7 @@ function data_process_B(tsv) {
             non_charters: non_charters,
             avg_score: tot_score/albums.length,
             top_chart_position: top_chart_position,
+            num_top_charted: num_top_charted,
             num_bnm: num_bnm
         }
         merged.push(insert);
@@ -175,8 +179,10 @@ function data_process_B(tsv) {
             i++;
             topScorers.push(k);
         }
-    //console.log(merged);
-    })
+        if(k.num_top_charted > 1){
+        	nonOneHits.push(k);
+        }
+    });
 }
 
 function intersect(pitchforkAlbums, billboardAlbums) {
