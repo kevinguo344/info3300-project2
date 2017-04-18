@@ -213,119 +213,123 @@ function intersect(pitchforkAlbums, billboardAlbums) {
 
 function renderArtistModule(div, artist) {
     var div = d3.select(div);
-    var svg = div.append("svg").attr("width", 300).attr("height", 150).style("background","grey").style("margin","5px");
+	var svg = div.append("svg").attr("width", 450).attr("height", 150).style("margin","5px");
     svg.append("circle")
         .attr("cx",200).attr("cy",75).attr("r", 50).attr("class", "rating")
     svg.append("text")
         .text(d3.format(".1f")(artist.avg_score)).attr("x", 200).attr("y", 75).attr("class", "ratingC")
         .style("text-anchor", "middle").style("dominant-baseline", "middle")
-    svg.append("text")
+    svg.append("text").attr("class", "artist")
         .text(artist.artist).attr("x", "75").attr("y","140")
         .style("text-anchor", "middle");
+    svg.append("text").attr("class", "label")
+		.text("Average Score").attr("x", "200").attr("y","140");
     svg.append("svg:image").attr("class","artistIMG")
         .attr("xlink:href", "./images/" + artist.artist + ".jpg")
         .attr("width", 100).attr("height", 100)
         .attr("x", 25).attr("y", 25);
+	svg.append("text").attr("class", "label")
+ 		.text("Albums").attr("x", "300").attr("y","25")
+		.style("alignment-baseline", "hanging");   
 }
 
 function rank(){
-    var svg_rank = d3.select("#rank");
-    svg_rank.selectAll("*").remove();
+	var svg_rank = d3.select("#rank");
+	svg_rank.selectAll("*").remove();
 
-    var width = svg_rank.attr("width");
-    var height = svg_rank.attr("height");
-    var padding = 40;
+	var width = svg_rank.attr("width");
+	var height = svg_rank.attr("height");
+	var padding = 40;
 
-    var intervals = new Array(31).fill(0);
-    var format = d3.format(".1f");
+	var intervals = new Array(31).fill(0);
+	var format = d3.format(".1f");
 
-    var colorScale = d3.scaleLinear()
-    .domain([1,200])
-    .range(['#f03b20','#ffeda0']);
+	var colorScale = d3.scaleLinear()
+	.domain([1,200])
+	.range(['#f03b20','#ffeda0']);
 
-    var legend = d3.range(0, 200, 20);
+	var legend = d3.range(0, 200, 20);
 
-    var yscale = d3.scaleLinear().domain([7,10]).range([height-padding*1.5,padding*0.5]);
+	var yscale = d3.scaleLinear().domain([7,10]).range([height-padding*1.5,padding*0.5]);
 
-    var yaxis = d3.axisLeft(yscale);
-    svg_rank.append("g").attr("transform","translate("+padding+",0)").call(yaxis.tickFormat(d3.format(".1f")));
+	var yaxis = d3.axisLeft(yscale);
+	svg_rank.append("g").attr("transform","translate("+padding+",0)").call(yaxis.tickFormat(d3.format(".1f")));
 
-    var data_rank = merged.sort(function(a,b){return b.avg_score-a.avg_score;}).slice(0,2000);
+	var data_rank = merged.sort(function(a,b){return b.avg_score-a.avg_score;}).slice(0,2000);
 
-    data = [];
-    data_rank.forEach(function(d){
-        d.albums.forEach(function(i){
-            if (!i.hasOwnProperty("artist"))
-                i.artist = d.artist;
-            data = data.concat([i]);
-        })
-    })
+	data = [];
+	data_rank.forEach(function(d){
+	    d.albums.forEach(function(i){
+	        if (!i.hasOwnProperty("artist"))
+	            i.artist = d.artist;
+	        data = data.concat([i]);
+	    })
+	})
 
-    console.log(year);
+	console.log(year);
 
-    var item;
+	var item;
 
-    var tool_tip = d3.tip()
-    .attr("class", "d3-tip")
-    .offset([-8, 0])
-    .html(function(d){
-    return getinfo(d,year)});
+	var tool_tip = d3.tip()
+		.attr("class", "d3-tip")
+		.offset([-8, 0])
+		.html(function(d){
+		return getinfo(d,year)});
 
-    svg_rank.call(tool_tip);
+	svg_rank.call(tool_tip);
 
-    svg_rank.selectAll("circles")
-    .data(data)
-    .enter().append("g")
-    .attr("class", "circles")
-    .append("circle")
-    .attr("cx", function (d) {
-        score = format(d.score);
-        if(d.score >= 7 && d.date.getFullYear()==year){
-            item = d;
-            intervals[score*10-70] += 1;
-            return intervals[score*10-70]*10 + padding +10;
-        }
-    })
-    .attr("cy", function (d) {
-        if(d.score >= 7 && d.date.getFullYear()==year)
-            return yscale(format(d.score));
-    })
-    .attr("r", function (d) {
-        if(d.score >= 7 && d.date.getFullYear()==year)
-            return "3";
-    })
-    .style("fill",function(d){
-        if(d.hasOwnProperty("top_chart_position") && d.top_chart_position){
-            return colorScale(Number(d.top_chart_position));
-        }
-        else
-            return "grey";
-    })
-    .on('mouseover', tool_tip.show)
-    .on('mouseout', tool_tip.hide);
+	svg_rank.selectAll("circles")
+		.data(data)
+		.enter().append("g")
+		.attr("class", "circles")
+		.append("circle")
+		.attr("cx", function (d) {
+		    score = format(d.score);
+		    if(d.score >= 7 && d.date.getFullYear()==year){
+		        item = d;
+		        intervals[score*10-70] += 1;
+		        return intervals[score*10-70]*10 + padding +10;
+		    }
+		})
+		.attr("cy", function (d) {
+		    if(d.score >= 7 && d.date.getFullYear()==year)
+		        return yscale(format(d.score));
+		})
+		.attr("r", function (d) {
+		    if(d.score >= 7 && d.date.getFullYear()==year)
+		        return "3";
+		})
+		.style("fill",function(d){
+		    if(d.hasOwnProperty("top_chart_position") && d.top_chart_position){
+		        return colorScale(Number(d.top_chart_position));
+		    }
+		    else
+		        return "grey";
+		})
+		.on('mouseover', tool_tip.show)
+		.on('mouseout', tool_tip.hide);
 
-    svg_rank.selectAll("rects")
-    .data(legend)
-    .enter().append("g")
-    .attr("class","rect")
-    .append("rect")
-    .attr("x",function(d,i){return 40*i+60;})
-    .attr("y","460")
-    .attr("width","40")
-    .attr("height","10")
-    .style("fill",function(d){return colorScale(d);});
+	svg_rank.selectAll("rects")
+		.data(legend)
+		.enter().append("g")
+		.attr("class","rect")
+		.append("rect")
+		.attr("x",function(d,i){return 40*i+60;})
+		.attr("y","460")
+		.attr("width","40")
+		.attr("height","10")
+		.style("fill",function(d){return colorScale(d);});
 
-    svg_rank.selectAll("legend")
-    .data(legend)
-    .enter().append("g")
-    .append("text")
-    .attr("x",function(d,i){return 40*i+60;})
-    .attr("y","480")
-    .text(function(d,i){return d;})
-    .style("text-anchor", "left")
-    .style("alignment-baseline","center")
-    .style("font-size","10");
-
+	svg_rank.selectAll("legend")
+		.data(legend)
+		.enter().append("g")
+		.append("text")
+		.attr("x",function(d,i){return 40*i+60;})
+		.attr("y","480")
+		.text(function(d,i){return d;})
+		.style("text-anchor", "left")
+		.style("alignment-baseline","center")
+		.style("font-size","10");
 }
 
 function getinfo(item,time){
