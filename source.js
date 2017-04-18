@@ -146,6 +146,9 @@ d3.tsv("us_billboard.tsv", function (error, tsv) {
 	
 	//renders artists components
 	topScorers.forEach(function(a) {
+		a.albums.sort(function(a,b) {
+			return b.date - a.date;
+		});
 		renderArtistModule("#favorites", a);
 	});
 });
@@ -185,17 +188,22 @@ function intersect(pitchforkAlbums, billboardAlbums) {
 
 function renderArtistModule(div, artist) {
 	var div = d3.select(div);
-	var svg = div.append("svg").attr("width", 300).attr("height", 150).style("background","grey").style("margin","5px");
+	console.log(artist.albums.length);
+	var svg = div.append("svg").attr("width", 450).attr("height", 150).style("margin","5px");
 	svg.append("circle")
-		.attr("cx",200).attr("cy",75).attr("r", 50).attr("class", "rating")
+		.attr("cx",200).attr("cy",75).attr("r", 50).attr("class", "rating");
 	svg.append("text")
-		.text(d3.format(".1f")(artist.avg_score)).attr("x", 200).attr("y", 75).attr("class", "ratingC")
-		.style("text-anchor", "middle").style("dominant-baseline", "middle")
+		.text(d3.format(".2f")(artist.avg_score)).attr("x", 200).attr("y", 75).attr("class", "ratingC")
 	svg.append("text")
 		.text(artist.artist).attr("x", "75").attr("y","140")
 		.style("text-anchor", "middle");
+	svg.append("text").attr("class", "label")
+		.text("Average Score").attr("x", "200").attr("y","140")
 	svg.append("svg:image").attr("class","artistIMG")
 		.attr("xlink:href", "/images/" + artist.artist + ".jpg")
 		.attr("width", 100).attr("height", 100)
 		.attr("x", 25).attr("y", 25);
+	svg.append("text").attr("class", "label")
+		.text("Albums").attr("x", "300").attr("y","25")
+		.style("alignment-baseline", "hanging");
 }

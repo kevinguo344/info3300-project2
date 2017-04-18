@@ -2,7 +2,7 @@ html{
 	font-family: 'Poppins', sans-serif;
 	font-family: 'Neuton', serif;
 }
-.header{
+h1, h2, h3{
 	font-family: 'Neuton';
 }
 .rating{
@@ -13,9 +13,13 @@ html{
 .ratingC{
 	font-family: 'Poppins';
 	text-anchor: middle;
-	dominant-baseline: middle;
+	alignment-baseline: middle;
 	font-size: 24px;
 	font-weight: 600;
+}
+.label{
+	text-anchor: middle;
+	font-size: 12px;
 }
 .artist{
 	text-anchor: middle;
