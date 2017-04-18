@@ -255,8 +255,10 @@ function rank(){
     data = [];
     data_rank.forEach(function(d){
         d.albums.forEach(function(i){
-            if (!i.hasOwnProperty("artist"))
-                i.artist = d.artist;
+
+            if (!i.hasOwnProperty("artist")){
+                i.artist = [d.artist];
+            }
             data = data.concat([i]);
         })
     })
