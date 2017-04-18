@@ -32,18 +32,18 @@ d3.queue()
     var slider = d3.select("#choice");
 
     slider.append("input")
-    .attr("type", "range")
-    .attr("class", "slider")
-    .attr("id", "slider")
-    .attr("min", "1999")
-    .attr("max", "2016")
-    .attr("step", "1")
-    .attr("value", "1999")
-    .style("width", "500px")
-    .on("input", function () {
-        year = Number(this.value);
-        rank();
-    });
+	    .attr("type", "range")
+	    .attr("class", "slider")
+	    .attr("id", "slider")
+	    .attr("min", "1999")
+	    .attr("max", "2016")
+	    .attr("step", "1")
+	    .attr("value", "1999")
+	    .style("width", "500px")
+	    .on("input", function () {
+	        year = Number(this.value);
+	        rank();
+    	});
 
     rank();
 });
@@ -61,7 +61,7 @@ function data_process_A(json) {
             artist: k.artists,
             date: parseDate(formatDate(add)),
             score: k.score[0],
-            //best_new_music: k.best_new_music,
+            best_new_music: k.best_new_music,
             genre: k.genres
         };
     });
@@ -146,6 +146,7 @@ function data_process_B(tsv) {
                 non_charters.push(a);
             }
             tot_score += parseFloat(a.score);
+        
             if(a.best_new_music){
                 num_bnm++;
             }
@@ -167,7 +168,7 @@ function data_process_B(tsv) {
         return b.avg_score - a.avg_score;
     })
 
-    var count = 12;
+    var count = 9;
     var i = 0;
     merged.forEach(function(k) {
         if(k.albums.length > 3 && i < count){
@@ -213,24 +214,58 @@ function intersect(pitchforkAlbums, billboardAlbums) {
 
 function renderArtistModule(div, artist) {
     var div = d3.select(div);
-	var svg = div.append("svg").attr("width", 450).attr("height", 150).style("margin","5px");
+    var aX = 0;
+	var svg = div.append("svg").attr("width", 350).attr("height", 155).style("margin","5px");
     svg.append("circle")
         .attr("cx",200).attr("cy",75).attr("r", 50).attr("class", "rating")
     svg.append("text")
-        .text(d3.format(".1f")(artist.avg_score)).attr("x", 200).attr("y", 75).attr("class", "ratingC")
+        .text(d3.format(".2f")(artist.avg_score)).attr("x", 200).attr("y", 75).attr("class", "ratingC")
         .style("text-anchor", "middle").style("dominant-baseline", "middle")
     svg.append("text").attr("class", "artist")
-        .text(artist.artist).attr("x", "75").attr("y","140")
+        .text(artist.artist).attr("x", "75").attr("y","145")
         .style("text-anchor", "middle");
     svg.append("text").attr("class", "label")
-		.text("Average Score").attr("x", "200").attr("y","140");
+		.text("Average Score").attr("x", "200").attr("y","145");
     svg.append("svg:image").attr("class","artistIMG")
         .attr("xlink:href", "./images/" + artist.artist + ".jpg")
         .attr("width", 100).attr("height", 100)
         .attr("x", 25).attr("y", 25);
 	svg.append("text").attr("class", "label")
  		.text("Albums").attr("x", "300").attr("y","25")
-		.style("alignment-baseline", "hanging");   
+		.style("alignment-baseline", "hanging");
+	if(artist.albums.length < 6){
+		aX = 300;
+		var aY = 57;
+		artist.albums.forEach(function (a) {
+			var color = "black";
+			if(a.best_new_music){
+				color = "red";
+			}
+			svg.append("circle")
+				.attr("cx", aX)
+				.attr("cy", aY)
+				.attr("r", 3)
+				.style("fill", color);
+			aY += 12;
+		});
+	}
+	else{
+		aX = 292;
+		var aY = 57;
+		for(var i = 0; i < artist.albums.length; i++){
+			var color = "black";
+			if(artist.albums[i].best_new_music){
+				color = "red";
+			}
+			if(i == 5){aX = 308; aY = 57;}
+			svg.append("circle")
+				.attr("cx", aX)
+				.attr("cy", aY)
+				.attr("r",3)
+				.style("fill", color);
+			aY += 12;
+		}
+	}
 }
 
 function rank(){
@@ -265,8 +300,6 @@ function rank(){
 	        data = data.concat([i]);
 	    })
 	})
-
-	console.log(year);
 
 	var item;
 

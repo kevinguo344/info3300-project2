@@ -5,6 +5,11 @@ html{
 h1, h2, h3{
 	font-family: 'Neuton';
 }
+.section{
+	width: 80%;
+	margin: 0 auto;
+}
+
 .rating{
 	stroke-width: 6;
 	stroke: black;
@@ -20,11 +25,12 @@ h1, h2, h3{
 .label{
 	font-family: 'Neuton';
 	text-anchor: middle;
-	font-size: 12px;
+	font-size: 16px;
 }
 .artist{
 	text-anchor: middle;
 	font-family: 'Neuton';
+	font-weight: 700;
 }
 .artistIMG{
 	clip-path: circle(50px at center);
