@@ -40,7 +40,7 @@ d3.queue()
 	    .attr("class", "slider")
 	    .attr("id", "slider")
 	    .attr("min", "1999")
-	    .attr("max", "2016")
+	    .attr("max", "2017")
 	    .attr("step", "1")
 	.attr("value", "1999")
 	    .style("width", "500px")
@@ -74,7 +74,6 @@ d3.queue()
 });
 
 function data_process_A(json) {
-    //console.log("Parsing pitchfork data");
     reviewData = json;
     parseDate = d3.timeParse("%m-%d-%Y");
 
@@ -116,7 +115,6 @@ function data_process_A(json) {
 }
 
 function data_process_B(tsv) {
-    //console.log("Parsing billboard data");
     chartData = tsv;
     parseDate = d3.timeParse("%Y-%m-%d");
 
@@ -244,7 +242,6 @@ function intersect(pitchforkAlbums, billboardAlbums) {
 
 function renderArtistModule(div, artist) {
     var div = d3.select(div);
-
     var aX = 0;
 
 	var svg = div.append("svg").attr("width", 350).attr("height", 155).style("margin","5px");
@@ -288,9 +285,7 @@ function renderArtistModule(div, artist) {
         .offset([-8, 0])
         .html(function(d){
         return getfavorite(d);});
-
     svg.call(tool_tip);
-
     svg.selectAll("circles")
         .data(artist.albums)
         .enter().append("g")
@@ -316,6 +311,10 @@ function rank(){
 	var height = svg_rank.attr("height");
 	var padding = 40;
 
+	/*svg_rank.append("text")
+		.text("Number of Albums")
+		.
+	*/
 	var intervals = new Array(31).fill(0);
     positions.fill(0);
 	var format = d3.format(".1f");
@@ -332,8 +331,6 @@ function rank(){
 	svg_rank.append("g").attr("transform","translate("+padding+",0)").call(yaxis.tickFormat(d3.format(".1f")));
 
 	var data_rank = merged.sort(function(a,b){return b.avg_score-a.avg_score;}).slice(0,2000);
-    //data_rank.sort(function(a,b){return a.top_chart_position - b.top_chart_position;});
-    //console.log(data_rank);
 
 	data = [];
 	data_rank.forEach(function(d){
@@ -432,12 +429,10 @@ function rank(){
               .transition()
                 .on("start", repeat);
         });
-
 }
 
 function getinfo(item,time){
     var info = "";
-
     info += "Artist: "+ item.artist[0]+ "<br>";
     info += "Album: "+ item.album + "<br>";
     if(item.top_chart_position!=100000)
@@ -453,7 +448,8 @@ function getfavorite(item){
     info += "Album: "+ item.album + "<br>";
     info += "Year: "+ item.date.getFullYear()+ "<br>";
     info += "Score: "+ item.score + "<br>";
-    info += "Best New Music: "+ item.best_new_music + "<br>";
+    if(item.best_new_music)
+    	info += "Best New Music: "+ item.best_new_music + "<br>";
     if(item.top_chart_position!=100000)
         info += "Top Position:" + item.top_chart_position;
 
@@ -465,7 +461,7 @@ function getArtist(item){
     //console.log(item);
 
     info += "Name: "+ item.artist + "<br>";
-    info += "Number of albums: "+ item.albums.length + "<br>";
+    //info += "Number of albums: "+ item.albums.length + "<br>";
     info += "Average score: "+ item.avg_score.toFixed(2) + "<br>";
     info += "Number of albums been on top chart: "+ item.num_top_charted + "<br>";
     info += "Highest Position: " + item.top_chart_position;
@@ -474,12 +470,20 @@ function getArtist(item){
 }
 
 function draw_top_charters(){
+<<<<<<< Updated upstream
     //console.log("Boris");
 
     var svg = d3.select("#top_charter")
     svg.selectAll("*").remove();
 
 
+=======
+    var svg = d3.select("#charters")
+        .append("svg")
+        .attr("id", "top_charter")
+        .attr("height", 1100)
+        .attr("width", 800);
+>>>>>>> Stashed changes
     var width = svg.attr("width");
     var height = svg.attr("height");
     var padding = 40;
@@ -547,7 +551,6 @@ function draw_top_charters(){
         .on('mouseover', tool_tip.show)
         .on('mouseout', tool_tip.hide);
 
-
     svg.selectAll(".chosen circle")
         .transition()
         .duration(1000)
@@ -559,7 +562,6 @@ function draw_top_charters(){
               .transition()
                 .on("start", repeat);
         });
-
 }
 
 function showpie(data){
@@ -567,33 +569,34 @@ function showpie(data){
     svg_pie.selectAll("*").remove();
 
     var arc = d3.arc()
-            .innerRadius(30)
-            .outerRadius(50);
+        .innerRadius(30)
+        .outerRadius(50);
 
     var pie = d3.pie()
-            .sort(null)
-            .value(function(d) { return d; });
+        .sort(null)
+        .value(function(d) { return d; });
 
     var color = ['#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c'];
     var exist = ['#d9d9d9','grey'];
 
     var pies_1 = svg_pie.selectAll(".pies")
-        .data(pie(data.slice(0,5))) // I'm unsure why I need the leading 0.
+        .data(pie(data.slice(0,5)))
         .enter()
         .append('g')
         .attr('class','arc')
         .attr("transform","translate(50,250)");
 
     pies_1.append("path")
-      .transition(1000)
-      .attr('d',arc)
-      .attr("fill",function(d,i){
-           return color[4-i];
-      });
+    	.transition(1000)
+    	.attr('d',arc)
+    	.attr("fill",function(d,i){
+        	return color[4-i];
+    	});
 
     percentage = d3.sum(data.slice(0,5));
+
     var pies_2 = svg_pie.selectAll(".pies")
-        .data(pie([percentage,data[5]])) // I'm unsure why I need the leading 0.
+        .data(pie([percentage,data[5]]))
         .enter()
         .append('g')
         .attr('class','arc')
@@ -637,7 +640,7 @@ function showpie(data){
         .attr("height","15")
         .style("fill",color[4-i]);
 
-        svg_pie.append("text")
+    svg_pie.append("text")
         .attr("x","140")
         .attr("y", 200+i*30)
         .text(d3.format(".1f")(d/percentage*100) + "% in top " + i*40+ "-" +(i+1)*40)
@@ -646,22 +649,3 @@ function showpie(data){
         .style("font-size","15");
     })
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
