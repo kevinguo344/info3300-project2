@@ -470,20 +470,11 @@ function getArtist(item){
 }
 
 function draw_top_charters(){
-<<<<<<< Updated upstream
     //console.log("Boris");
 
     var svg = d3.select("#top_charter")
     svg.selectAll("*").remove();
 
-
-=======
-    var svg = d3.select("#charters")
-        .append("svg")
-        .attr("id", "top_charter")
-        .attr("height", 1100)
-        .attr("width", 800);
->>>>>>> Stashed changes
     var width = svg.attr("width");
     var height = svg.attr("height");
     var padding = 40;
