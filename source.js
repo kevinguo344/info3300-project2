@@ -13,6 +13,8 @@ var merged = [];
 var topScorers = [];
 var nonOneHits = [];
 
+var positions = new Array(6).fill(0);
+
 var year = 1999;
 
 formatDate = d3.timeFormat("%m-%d-%Y");
@@ -44,10 +46,13 @@ d3.queue()
 	    .on("input", function () {
 	        year = Number(this.value);
 	        rank();
+            showpie(positions);
     	});
 
     rank();
     draw_top_charters();
+    showpie(positions);
+
 });
 
 function data_process_A(json) {
@@ -277,6 +282,7 @@ function rank(){
 	var padding = 40;
 
 	var intervals = new Array(31).fill(0);
+    positions.fill(0);
 	var format = d3.format(".1f");
 
 	var colorScale = d3.scaleLinear()
@@ -340,14 +346,19 @@ function rank(){
 		        return "3";
 		})
 		.style("fill",function(d){
-		    if( d.top_chart_position!=100000){
+		    if( d.top_chart_position!=100000 && d.date.getFullYear()==year){
+                //console.log(parseInt(d.top_chart_position/40));
+                positions[parseInt(d.top_chart_position/40)]+=1;
 		        return colorScale(Number(d.top_chart_position));
 		    }
-		    else
+		    else{
+                positions[5] += 1;
 		        return "grey";
+            }
 		})
 		.on('mouseover', tool_tip.show)
 		.on('mouseout', tool_tip.hide);
+    console.log(positions);
 
 	svg_rank.selectAll("rects")
 		.data(legend)
@@ -370,14 +381,6 @@ function rank(){
 		.style("text-anchor", "left")
 		.style("alignment-baseline","center")
 		.style("font-size","10");
-
-    svg_rank.append("text")
-        .attr("x","400")
-        .attr("y","50")
-        .text(year)
-        .style("text-anchor", "left")
-        .style("alignment-baseline","center")
-        .style("font-size","20");
 
 }
 
@@ -423,7 +426,6 @@ function getArtist(item){
 
 function draw_top_charters(){
     console.log("Boris");
-
 
     var svg = d3.select("#charters")
         .append("svg")
@@ -496,6 +498,91 @@ function draw_top_charters(){
 
 
 
+}
+
+function showpie(data){
+    var svg_pie = d3.select("#pie");
+    svg_pie.selectAll("*").remove();
+
+    var arc = d3.arc()
+            .innerRadius(30)
+            .outerRadius(50);
+
+    var pie = d3.pie()
+            .sort(null)
+            .value(function(d) { return d; });
+
+    var color = ['#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c'];
+    var exist = ['#525252','#d9d9d9'];
+
+    var pies_1 = svg_pie.selectAll(".pies")
+        .data(pie(data.slice(0,5))) // I'm unsure why I need the leading 0.
+        .enter()
+        .append('g')
+        .attr('class','arc')
+        .attr("transform","translate(50,250)");
+
+    pies_1.append("path")
+      .transition(1000)
+      .attr('d',arc)
+      .attr("fill",function(d,i){
+           return color[4-i];
+      });
+
+    percentage = d3.sum(data.slice(0,5));
+    var pies_2 = svg_pie.selectAll(".pies")
+        .data(pie([percentage,data[5]])) // I'm unsure why I need the leading 0.
+        .enter()
+        .append('g')
+        .attr('class','arc')
+        .attr("transform","translate(50,100)");
+
+    pies_2.append("path")
+      .transition(1000)
+      .attr('d',arc)
+      .attr("fill",function(d,i){
+           return exist[1-i];
+      });
+
+    svg_pie.append("text")
+        .attr("x","150")
+        .attr("y","50")
+        .text(year)
+        .style("text-anchor", "left")
+        .style("alignment-baseline","center")
+        .style("font-size","20");
+
+    svg_pie.append("text")
+        .attr("x","140")
+        .attr("y","100")
+        .text(d3.format(".2f")(percentage/data[5]*100) + "% show on the chart")
+        .style("text-anchor", "left")
+        .style("alignment-baseline","center")
+        .style("font-size","15");
+
+    svg_pie.append("rect")
+        .attr("x","120")
+        .attr("y", "87.5")
+        .attr("width","15")
+        .attr("height","15")
+        .style("fill",exist[1]);
+
+    positions.slice(0,5).forEach(function(d,i){
+        svg_pie.append("rect")
+        .attr("x","120")
+        .attr("y", 187.5+i*30)
+        .attr("width","15")
+        .attr("height","15")
+        .style("fill",color[4-i]);
+
+        svg_pie.append("text")
+        .attr("x","140")
+        .attr("y", 200+i*30)
+        .text(d3.format(".1f")(d/percentage*100) + "% in top " + i*40+ "-" +(i+1)*40)
+        .style("text-anchor", "left")
+        .style("alignment-baseline","center")
+        .style("font-size","15");
+    })
 }
 
 
