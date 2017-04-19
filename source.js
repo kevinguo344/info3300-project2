@@ -47,6 +47,7 @@ d3.queue()
     	});
 
     rank();
+    draw_top_charters();
 });
 
 function data_process_A(json) {
@@ -164,7 +165,7 @@ function data_process_B(tsv) {
             top_chart_position: top_chart_position,
             num_top_charted: num_top_charted,
             num_bnm: num_bnm
-        }
+        };
         merged.push(insert);
     });
 
@@ -257,7 +258,7 @@ function renderArtistModule(div, artist) {
         .append("circle")
         .attr("r","3")
         .attr("cx", "300")
-        .attr("cy",function(d,i){console.log(d);return 54 + 12*i;})
+        .attr("cy",function(d,i){return 54 + 12*i;})
         .style("fill",function(d){
             if(d.best_new_music) return "red";
             else return "black";
@@ -406,3 +407,112 @@ function getfavorite(item){
 
     return info;
 }
+
+function getArtist(item){
+    var info = "";
+    console.log(item);
+
+    info += "Name: "+ item.artist + "<br>";
+    info += "Number of albums: "+ item.albums.length + "<br>";
+    info += "Average score: "+ item.avg_score.toFixed(2) + "<br>";
+    info += "Number of albums been on top chart: "+ item.num_top_charted + "<br>";
+    info += "Highest Position: " + item.top_chart_position;
+
+    return info;
+}
+
+function draw_top_charters(){
+    console.log("Boris");
+
+
+    var svg = d3.select("#charters")
+        .append("svg")
+        .attr("id", "top_charter")
+        .attr("height", 1100)
+        .attr("width", 800);
+    var width = svg.attr("width");
+    var height = svg.attr("height");
+    var padding = 40;
+
+    var dataset = [];
+    var position_quantity = [];
+    while(position_quantity.length <= 200){
+        position_quantity.push(0);
+    }
+
+    for(var i = 0; i < merged.length; i++){
+        if(merged[i]["top_chart_position"] <= 100 && merged[i]["num_top_charted"] > 1){
+            if(Number.isInteger(parseInt(merged[i]["top_chart_position"]))){
+                dataset.push(merged[i]);
+                position_quantity[parseInt(merged[i]["top_chart_position"])]++;
+            }
+            else {
+                console.log("Unknown top chart position");
+                console.log(merged[i]);
+            }
+        }
+    }
+    console.log(position_quantity);
+    console.log(dataset);
+    var position_counter = position_quantity.slice();
+
+    var yScale = d3.scaleLinear()
+        .domain([100,1])
+        .range([height-padding*1.5,padding*0.5]);
+
+    var yAxis = d3.axisLeft(yScale);
+    svg.append("g")
+        .attr("transform","translate("+padding+",0)")
+        .call(yAxis);
+
+    var tool_tip = d3.tip()
+        .attr("class", "d3-tip")
+        .offset([-8, 0])
+        .html(function(d){
+            return getArtist(d)
+        });
+
+    svg.call(tool_tip);
+
+    svg.selectAll(".circles")
+        .data(dataset)
+        .enter().append("g")
+        .attr("class", "circles")
+        .append("circle")
+        .attr("cx", function (d){
+            var position = parseInt(d["top_chart_position"]);
+            position_counter[position]--;
+            return padding + (15 * (position_quantity[position] - position_counter[position]))
+        })
+        .attr("cy", function (d) {
+                return yScale(d["top_chart_position"]);
+        })
+        .attr("r", 4)
+        .style("fill", "white")
+        .style("stroke", "black")
+        .style("stroke-width", "1px")
+        .on('mouseover', tool_tip.show)
+        .on('mouseout', tool_tip.hide);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
