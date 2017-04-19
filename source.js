@@ -149,7 +149,7 @@ function data_process_B(tsv) {
                 non_charters.push(a);
             }
             tot_score += parseFloat(a.score);
-        
+
             if(a.best_new_music){
                 num_bnm++;
             }
@@ -220,7 +220,9 @@ function intersect(pitchforkAlbums, billboardAlbums) {
 
 function renderArtistModule(div, artist) {
     var div = d3.select(div);
+
     var aX = 0;
+
 	var svg = div.append("svg").attr("width", 350).attr("height", 155).style("margin","5px");
     svg.append("circle")
         .attr("cx",200).attr("cy",75).attr("r", 50).attr("class", "rating")
@@ -239,20 +241,30 @@ function renderArtistModule(div, artist) {
 	svg.append("text").attr("class", "label")
  		.text("Albums").attr("x", "300").attr("y","25")
 		.style("alignment-baseline", "hanging");
-	aX = 300;
-	var aY = 54;
-	artist.albums.forEach(function (a) {
-		var color = "black";
-		if(a.best_new_music){
-			color = "red";
-		}
-		svg.append("circle")
-			.attr("cx", aX)
-			.attr("cy", aY)
-			.attr("r", 3)
-			.style("fill", color);
-		aY += 12;
-	});
+
+    var tool_tip = d3.tip()
+        .attr("class", "d3-tip")
+        .offset([-8, 0])
+        .html(function(d){
+        return getfavorite(d);});
+
+    svg.call(tool_tip);
+
+    svg.selectAll("circles")
+        .data(artist.albums)
+        .enter().append("g")
+        .attr("class", "circles")
+        .append("circle")
+        .attr("r","3")
+        .attr("cx", "300")
+        .attr("cy",function(d,i){console.log(d);return 54 + 12*i;})
+        .style("fill",function(d){
+            if(d.best_new_music) return "red";
+            else return "black";
+        })
+        .on('mouseover', tool_tip.show)
+        .on('mouseout', tool_tip.hide);
+
 }
 
 function rank(){
@@ -278,15 +290,22 @@ function rank(){
 	svg_rank.append("g").attr("transform","translate("+padding+",0)").call(yaxis.tickFormat(d3.format(".1f")));
 
 	var data_rank = merged.sort(function(a,b){return b.avg_score-a.avg_score;}).slice(0,2000);
+    //data_rank.sort(function(a,b){return a.top_chart_position - b.top_chart_position;});
+    //console.log(data_rank);
 
 	data = [];
 	data_rank.forEach(function(d){
 	    d.albums.forEach(function(i){
 	        if (!i.hasOwnProperty("artist"))
 	            i.artist = [d.artist];
+            if (!i.hasOwnProperty("top_chart_position"))
+                i.top_chart_position = 100000;
+            if (!i.top_chart_position)
+                i.top_chart_position = 100000;
 	        data = data.concat([i]);
 	    })
 	})
+    data.sort(function(a,b){return a.top_chart_position - b.top_chart_position;});
 
 	var item;
 
@@ -320,7 +339,7 @@ function rank(){
 		        return "3";
 		})
 		.style("fill",function(d){
-		    if(d.hasOwnProperty("top_chart_position") && d.top_chart_position){
+		    if( d.top_chart_position!=100000){
 		        return colorScale(Number(d.top_chart_position));
 		    }
 		    else
@@ -350,6 +369,15 @@ function rank(){
 		.style("text-anchor", "left")
 		.style("alignment-baseline","center")
 		.style("font-size","10");
+
+    svg_rank.append("text")
+        .attr("x","400")
+        .attr("y","50")
+        .text(year)
+        .style("text-anchor", "left")
+        .style("alignment-baseline","center")
+        .style("font-size","20");
+
 }
 
 function getinfo(item,time){
@@ -359,7 +387,21 @@ function getinfo(item,time){
     info += "Album: "+ item.album + "<br>";
     info += "Year: "+ item.date.getFullYear()+ "<br>";
     info += "Score: "+ item.score + "<br>";
-    if(item.hasOwnProperty("top_chart_position") && item.top_chart_position)
+    if(item.top_chart_position!=100000)
+        info += "Top Position:" + item.top_chart_position;
+
+    return info;
+}
+
+function getfavorite(item){
+    var info = "";
+    console.log(item);
+
+    info += "Album: "+ item.album + "<br>";
+    info += "Year: "+ item.date.getFullYear()+ "<br>";
+    info += "Score: "+ item.score + "<br>";
+    info += "Best New Music: "+ item.best_new_music + "<br>";
+    if(item.top_chart_position!=100000)
         info += "Top Position:" + item.top_chart_position;
 
     return info;
