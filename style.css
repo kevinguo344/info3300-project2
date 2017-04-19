@@ -5,6 +5,11 @@ html{
 h1, h2, h3{
 	font-family: 'Neuton';
 }
+
+p{
+	font-family: 'Poppins';
+}
+
 .section{
 	width: 80%;
 	margin: 0 auto;
@@ -42,13 +47,39 @@ h1, h2, h3{
 }
 
 .d3-tip {
-	line-height: 1.3;
+	line-height: 1.5;
 	padding: 6px;
 	background: rgba(0, 0, 0, 0.8);
 	color: #fff;
 	border-radius: 4px;
 	font-size: 12px;
 }
+
+.d3-tip-top{
+	line-height: 0.5;
+	padding: 6px;
+	background: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	border-radius: 4px;
+	font-size: 12px;
+}
+.d3-tip-top:after {
+	box-sizing: border-box;
+	display: inline;
+	font-size: 10px;
+	width: 100%;
+	line-height: 1;
+	color: rgba(0, 0, 0, 0.8);
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
+}
+.d3-tip-top.n:after {
+	margin: -2px 0 0 0;
+	top: 100%;
+	left: 0;
+}
+
 .d3-tip:after {
 	box-sizing: border-box;
 	display: inline;

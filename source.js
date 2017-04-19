@@ -281,7 +281,7 @@ function renderArtistModule(div, artist) {
 		.style("alignment-baseline", "hanging");
 
     var tool_tip = d3.tip()
-        .attr("class", "d3-tip")
+        .attr("class", "d3-tip-top")
         .offset([-8, 0])
         .html(function(d){
         return getfavorite(d);});
@@ -291,9 +291,9 @@ function renderArtistModule(div, artist) {
         .enter().append("g")
         .attr("class", "circles")
         .append("circle")
-        .attr("r","3")
+        .attr("r","4")
         .attr("cx", "300")
-        .attr("cy",function(d,i){return 54 + 12*i;})
+        .attr("cy",function(d,i){return 54 + 16*i;})
         .style("fill",function(d){
             if(d.best_new_music) return "red";
             else return "black";
@@ -311,10 +311,6 @@ function rank(){
 	var height = svg_rank.attr("height");
 	var padding = 40;
 
-	/*svg_rank.append("text")
-		.text("Number of Albums")
-		.
-	*/
 	var intervals = new Array(31).fill(0);
     positions.fill(0);
 	var format = d3.format(".1f");
@@ -379,7 +375,7 @@ function rank(){
 		})
 		.attr("r", function (d) {
 		    if(d.score >= 7)
-		        return "3";
+		        return "4.5";
 		})
 		.style("fill",function(d){
 		    if( d.top_chart_position!=100000){
@@ -445,23 +441,21 @@ function getfavorite(item){
     var info = "";
     //console.log(item);
 
-    info += "Album: "+ item.album + "<br>";
-    info += "Year: "+ item.date.getFullYear()+ "<br>";
-    info += "Score: "+ item.score + "<br>";
+    info += "<p><i><b> "+ item.album + "</i></b></p>";
+    info += "<p>Year: "+ item.date.getFullYear()+ "</p>";
+    info += "<p>Score: "+ item.score + "</p>";
     if(item.best_new_music)
-    	info += "Best New Music: "+ item.best_new_music + "<br>";
+    	info += "<b><p>Best New Music</b></p>";
     if(item.top_chart_position!=100000)
-        info += "Top Position:" + item.top_chart_position;
+        info += "<p>Top Position:" + item.top_chart_position + "</p>";
 
     return info;
 }
 
 function getArtist(item){
     var info = "";
-    //console.log(item);
 
     info += "Name: "+ item.artist + "<br>";
-    //info += "Number of albums: "+ item.albums.length + "<br>";
     info += "Average score: "+ item.avg_score.toFixed(2) + "<br>";
     info += "Number of albums been on top chart: "+ item.num_top_charted + "<br>";
     info += "Highest Position: " + item.top_chart_position;
@@ -491,14 +485,8 @@ function draw_top_charters(){
                 dataset.push(merged[i]);
                 position_quantity[parseInt(merged[i]["top_chart_position"])]++;
             }
-            else {
-                //console.log("Unknown top chart position");
-                //console.log(merged[i]);
-            }
         }
     }
-    //console.log(position_quantity);
-    //console.log(dataset);
     var position_counter = position_quantity.slice();
 
     var yScale = d3.scaleLinear()
