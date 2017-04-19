@@ -4,6 +4,7 @@ var chartData;
 var reviews = [];
 var pitchforkArtists = [];
 var years = [];
+var chosen_artists = [];
 var genre;
 
 var charts;
@@ -52,6 +53,23 @@ d3.queue()
     rank();
     draw_top_charters();
     showpie(positions);
+
+    var div_2 = document.getElementById('overTime');
+    div_2.style.display = 'none';
+
+    d3.select("#by_artist").on("click", function(){
+        var div_1 = document.getElementById('charters');
+        var div_2 = document.getElementById('overTime');
+        div_2.style.display = 'none';
+        div_1.style.display = 'block';
+    });
+
+    d3.select("#by_album").on("click", function(){
+        var div_1 = document.getElementById('charters');
+        var div_2 = document.getElementById('overTime');
+        div_1.style.display = 'none';
+        div_2.style.display = 'block';
+    });
 
 });
 
@@ -147,7 +165,7 @@ function data_process_B(tsv) {
             if(a.top_chart_position != null){
                 charters.push(a);
                 num_top_charted++;
-                if(a.top_chart_position < top_chart_position){
+                if(parseInt(a.top_chart_position) < parseInt(top_chart_position)){
                     top_chart_position = a.top_chart_position;
                 }
             }
@@ -230,20 +248,37 @@ function renderArtistModule(div, artist) {
     var aX = 0;
 
 	var svg = div.append("svg").attr("width", 350).attr("height", 155).style("margin","5px");
+
     svg.append("circle")
         .attr("cx",200).attr("cy",75).attr("r", 50).attr("class", "rating")
+
     svg.append("text")
         .text(d3.format(".2f")(artist.avg_score)).attr("x", 200).attr("y", 75).attr("class", "ratingC")
         .style("text-anchor", "middle").style("dominant-baseline", "middle")
+
     svg.append("text").attr("class", "artist")
         .text(artist.artist).attr("x", "75").attr("y","145")
         .style("text-anchor", "middle");
+
     svg.append("text").attr("class", "label")
 		.text("Average Score").attr("x", "200").attr("y","145");
+
     svg.append("svg:image").attr("class","artistIMG")
         .attr("xlink:href", "./images/" + artist.artist + ".jpg")
         .attr("width", 100).attr("height", 100)
-        .attr("x", 25).attr("y", 25);
+        .attr("x", 25).attr("y", 25)
+        .on("click",function(){
+            index = chosen_artists.indexOf(artist.artist);
+            if(index<0)
+                chosen_artists.push(artist.artist);
+            else
+                chosen_artists.splice(index,1);
+
+            console.log(chosen_artists);
+            draw_top_charters();
+            rank();
+        });
+
 	svg.append("text").attr("class", "label")
  		.text("Albums").attr("x", "300").attr("y","25")
 		.style("alignment-baseline", "hanging");
@@ -313,6 +348,7 @@ function rank(){
 	    })
 	})
     data.sort(function(a,b){return a.top_chart_position - b.top_chart_position;});
+    data = data.filter(function(d){return d.date.getFullYear() == year;})
 
 	var item;
 
@@ -327,7 +363,10 @@ function rank(){
 	svg_rank.selectAll("circles")
 		.data(data)
 		.enter().append("g")
-		.attr("class", "circles")
+		.attr("class", function(d){
+            if(chosen_artists.indexOf(d.artist[0])<0) return "circles";
+            else { return "chosen circles";}
+        })
 		.append("circle")
 		.attr("cx", function (d) {
 		    score = format(d.score);
@@ -338,15 +377,15 @@ function rank(){
 		    }
 		})
 		.attr("cy", function (d) {
-		    if(d.score >= 7 && d.date.getFullYear()==year)
+		    if(d.score >= 7)
 		        return yscale(format(d.score));
 		})
 		.attr("r", function (d) {
-		    if(d.score >= 7 && d.date.getFullYear()==year)
+		    if(d.score >= 7)
 		        return "3";
 		})
 		.style("fill",function(d){
-		    if( d.top_chart_position!=100000 && d.date.getFullYear()==year){
+		    if( d.top_chart_position!=100000){
                 //console.log(parseInt(d.top_chart_position/40));
                 positions[parseInt(d.top_chart_position/40)]+=1;
 		        return colorScale(Number(d.top_chart_position));
@@ -358,7 +397,7 @@ function rank(){
 		})
 		.on('mouseover', tool_tip.show)
 		.on('mouseout', tool_tip.hide);
-    console.log(positions);
+    //console.log(positions);
 
 	svg_rank.selectAll("rects")
 		.data(legend)
@@ -382,6 +421,18 @@ function rank(){
 		.style("alignment-baseline","center")
 		.style("font-size","10");
 
+    svg_rank.selectAll(".chosen circle")
+        .transition()
+        .duration(1000)
+        .on("start", function repeat() {
+            d3.active(this)
+                .style("r","3")
+              .transition()
+                .style("r","5")
+              .transition()
+                .on("start", repeat);
+        });
+
 }
 
 function getinfo(item,time){
@@ -389,8 +440,6 @@ function getinfo(item,time){
 
     info += "Artist: "+ item.artist[0]+ "<br>";
     info += "Album: "+ item.album + "<br>";
-    info += "Year: "+ item.date.getFullYear()+ "<br>";
-    info += "Score: "+ item.score + "<br>";
     if(item.top_chart_position!=100000)
         info += "Top Position:" + item.top_chart_position;
 
@@ -399,7 +448,7 @@ function getinfo(item,time){
 
 function getfavorite(item){
     var info = "";
-    console.log(item);
+    //console.log(item);
 
     info += "Album: "+ item.album + "<br>";
     info += "Year: "+ item.date.getFullYear()+ "<br>";
@@ -413,7 +462,7 @@ function getfavorite(item){
 
 function getArtist(item){
     var info = "";
-    console.log(item);
+    //console.log(item);
 
     info += "Name: "+ item.artist + "<br>";
     info += "Number of albums: "+ item.albums.length + "<br>";
@@ -425,13 +474,12 @@ function getArtist(item){
 }
 
 function draw_top_charters(){
-    console.log("Boris");
+    //console.log("Boris");
 
-    var svg = d3.select("#charters")
-        .append("svg")
-        .attr("id", "top_charter")
-        .attr("height", 1100)
-        .attr("width", 800);
+    var svg = d3.select("#top_charter")
+    svg.selectAll("*").remove();
+
+
     var width = svg.attr("width");
     var height = svg.attr("height");
     var padding = 40;
@@ -449,13 +497,13 @@ function draw_top_charters(){
                 position_quantity[parseInt(merged[i]["top_chart_position"])]++;
             }
             else {
-                console.log("Unknown top chart position");
-                console.log(merged[i]);
+                //console.log("Unknown top chart position");
+                //console.log(merged[i]);
             }
         }
     }
-    console.log(position_quantity);
-    console.log(dataset);
+    //console.log(position_quantity);
+    //console.log(dataset);
     var position_counter = position_quantity.slice();
 
     var yScale = d3.scaleLinear()
@@ -479,7 +527,10 @@ function draw_top_charters(){
     svg.selectAll(".circles")
         .data(dataset)
         .enter().append("g")
-        .attr("class", "circles")
+        .attr("class", function(d){
+            if(chosen_artists.indexOf(d.artist)<0) return "circles";
+            else return "chosen circles";
+        })
         .append("circle")
         .attr("cx", function (d){
             var position = parseInt(d["top_chart_position"]);
@@ -489,7 +540,7 @@ function draw_top_charters(){
         .attr("cy", function (d) {
                 return yScale(d["top_chart_position"]);
         })
-        .attr("r", 4)
+        .attr("r", "4")
         .style("fill", "white")
         .style("stroke", "black")
         .style("stroke-width", "1px")
@@ -497,6 +548,17 @@ function draw_top_charters(){
         .on('mouseout', tool_tip.hide);
 
 
+    svg.selectAll(".chosen circle")
+        .transition()
+        .duration(1000)
+        .on("start", function repeat() {
+            d3.active(this)
+                .style("fill","white")
+              .transition()
+                .style("fill","blue")
+              .transition()
+                .on("start", repeat);
+        });
 
 }
 
@@ -513,7 +575,7 @@ function showpie(data){
             .value(function(d) { return d; });
 
     var color = ['#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c'];
-    var exist = ['#525252','#d9d9d9'];
+    var exist = ['#d9d9d9','grey'];
 
     var pies_1 = svg_pie.selectAll(".pies")
         .data(pie(data.slice(0,5))) // I'm unsure why I need the leading 0.
@@ -541,7 +603,7 @@ function showpie(data){
       .transition(1000)
       .attr('d',arc)
       .attr("fill",function(d,i){
-           return exist[1-i];
+           return exist[i];
       });
 
     svg_pie.append("text")
@@ -565,7 +627,7 @@ function showpie(data){
         .attr("y", "87.5")
         .attr("width","15")
         .attr("height","15")
-        .style("fill",exist[1]);
+        .style("fill",exist[0]);
 
     positions.slice(0,5).forEach(function(d,i){
         svg_pie.append("rect")
