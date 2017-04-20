@@ -268,9 +268,9 @@ function renderArtistModule(div, artist) {
         .on("click",function(){
             index = chosen_artists.indexOf(artist.artist);
             if(index<0)
-                chosen_artists.push(artist.artist);
+                chosen_artists=[artist.artist];
             else
-                chosen_artists.splice(index,1);
+                chosen_artists=[];
 
             console.log(chosen_artists);
             draw_top_charters();
@@ -286,6 +286,7 @@ function renderArtistModule(div, artist) {
         .offset([-8, 0])
         .html(function(d){
             return getfavorite(d);});
+
     svg.call(tool_tip);
     svg.selectAll("circles")
         .data(artist.albums)
