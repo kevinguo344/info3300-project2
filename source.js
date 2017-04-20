@@ -22,56 +22,56 @@ formatDate = d3.timeFormat("%m-%d-%Y");
 
 //parse through pitchfork data
 d3.queue()
-.defer(d3.json,"reviews.json")
-.defer(d3.tsv,"us_billboard.tsv")
-.await(function(error,json,tsv){
+    .defer(d3.json,"reviews.json")
+    .defer(d3.tsv,"us_billboard.tsv")
+    .await(function(error,json,tsv){
 
-    data_process_A(json);
-    data_process_B(tsv);
+        data_process_A(json);
+        data_process_B(tsv);
 
-    topScorers.forEach(function(a) {
-        renderArtistModule("#favorites", a);
-    });
+        topScorers.forEach(function(a) {
+            renderArtistModule("#favorites", a);
+        });
 
-    var slider = d3.select("#choice");
+        var slider = d3.select("#choice");
 
-    slider.append("input")
-	    .attr("type", "range")
-	    .attr("class", "slider")
-	    .attr("id", "slider")
-	    .attr("min", "1999")
-	    .attr("max", "2017")
-	    .attr("step", "1")
-	.attr("value", "1999")
-	    .style("width", "500px")
-	    .on("input", function () {
-	        year = Number(this.value);
-	        rank();
-            showpie(positions);
-    	});
+        slider.append("input")
+            .attr("type", "range")
+            .attr("class", "slider")
+            .attr("id", "slider")
+            .attr("min", "1999")
+            .attr("max", "2017")
+            .attr("step", "1")
+            .attr("value", "1999")
+            .style("width", "500px")
+            .on("input", function () {
+                year = Number(this.value);
+                rank();
+                showpie(positions);
+            });
 
-    rank();
-    draw_top_charters();
-    showpie(positions);
+        rank();
+        draw_top_charters();
+        showpie(positions);
 
-    var div_2 = document.getElementById('overTime');
-    div_2.style.display = 'none';
-
-    d3.select("#by_artist").on("click", function(){
-        var div_1 = document.getElementById('charters');
         var div_2 = document.getElementById('overTime');
         div_2.style.display = 'none';
-        div_1.style.display = 'block';
-    });
 
-    d3.select("#by_album").on("click", function(){
-        var div_1 = document.getElementById('charters');
-        var div_2 = document.getElementById('overTime');
-        div_1.style.display = 'none';
-        div_2.style.display = 'block';
-    });
+        d3.select("#by_artist").on("click", function(){
+            var div_1 = document.getElementById('charters');
+            var div_2 = document.getElementById('overTime');
+            div_2.style.display = 'none';
+            div_1.style.display = 'block';
+        });
 
-});
+        d3.select("#by_album").on("click", function(){
+            var div_1 = document.getElementById('charters');
+            var div_2 = document.getElementById('overTime');
+            div_1.style.display = 'none';
+            div_2.style.display = 'block';
+        });
+
+    });
 
 function data_process_A(json) {
     reviewData = json;
@@ -202,7 +202,7 @@ function data_process_B(tsv) {
             topScorers.push(k);
         }
         if(k.num_top_charted > 1){
-        	nonOneHits.push(k);
+            nonOneHits.push(k);
         }
     });
 }
@@ -244,26 +244,27 @@ function renderArtistModule(div, artist) {
     var div = d3.select(div);
     var aX = 0;
 
-	var svg = div.append("svg").attr("width", 350).attr("height", 155).style("margin","5px");
+    var svg = div.append("svg").attr("width", 350).attr("height", 155).style("margin","5px");
 
     svg.append("circle")
         .attr("cx",200).attr("cy",75).attr("r", 50).attr("class", "rating")
 
     svg.append("text")
         .text(d3.format(".2f")(artist.avg_score)).attr("x", 200).attr("y", 75).attr("class", "ratingC")
-        .style("text-anchor", "middle").style("dominant-baseline", "middle")
+        .style("text-anchor", "middle").style("dominant-baseline", "middle");
 
     svg.append("text").attr("class", "artist")
         .text(artist.artist).attr("x", "75").attr("y","145")
         .style("text-anchor", "middle");
 
     svg.append("text").attr("class", "label")
-		.text("Average Score").attr("x", "200").attr("y","145");
+        .text("Average Score").attr("x", "200").attr("y","145");
 
     svg.append("svg:image").attr("class","artistIMG")
         .attr("xlink:href", "./images/" + artist.artist + ".jpg")
         .attr("width", 100).attr("height", 100)
         .attr("x", 25).attr("y", 25)
+        .style("cursor", "pointer")
         .on("click",function(){
             index = chosen_artists.indexOf(artist.artist);
             if(index<0)
@@ -276,15 +277,15 @@ function renderArtistModule(div, artist) {
             rank();
         });
 
-	svg.append("text").attr("class", "label")
- 		.text("Albums").attr("x", "300").attr("y","25")
-		.style("alignment-baseline", "hanging");
+    svg.append("text").attr("class", "label")
+        .text("Albums").attr("x", "300").attr("y","25")
+        .style("alignment-baseline", "hanging");
 
     var tool_tip = d3.tip()
         .attr("class", "d3-tip-top")
         .offset([-8, 0])
         .html(function(d){
-        return getfavorite(d);});
+            return getfavorite(d);});
     svg.call(tool_tip);
     svg.selectAll("circles")
         .data(artist.albums)
@@ -304,115 +305,115 @@ function renderArtistModule(div, artist) {
 }
 
 function rank(){
-	var svg_rank = d3.select("#rank");
-	svg_rank.selectAll("*").remove();
+    var svg_rank = d3.select("#rank");
+    svg_rank.selectAll("*").remove();
 
-	var width = svg_rank.attr("width");
-	var height = svg_rank.attr("height");
-	var padding = 40;
+    var width = svg_rank.attr("width");
+    var height = svg_rank.attr("height");
+    var padding = 40;
 
-	var intervals = new Array(31).fill(0);
+    var intervals = new Array(31).fill(0);
     positions.fill(0);
-	var format = d3.format(".1f");
+    var format = d3.format(".1f");
 
-	var colorScale = d3.scaleLinear()
-	.domain([1,200])
-	.range(['#f03b20','#ffeda0']);
+    var colorScale = d3.scaleLinear()
+        .domain([1,200])
+        .range(['#f03b20','#ffeda0']);
 
-	var legend = d3.range(0, 200, 20);
+    var legend = d3.range(0, 200, 20);
 
-	var yscale = d3.scaleLinear().domain([7,10]).range([height-padding*1.5,padding*0.5]);
+    var yscale = d3.scaleLinear().domain([7,10]).range([height-padding*1.5,padding*0.5]);
 
-	var yaxis = d3.axisLeft(yscale);
-	svg_rank.append("g").attr("transform","translate("+padding+",0)").call(yaxis.tickFormat(d3.format(".1f")));
+    var yaxis = d3.axisLeft(yscale);
+    svg_rank.append("g").attr("transform","translate("+padding+",0)").call(yaxis.tickFormat(d3.format(".1f")));
 
-	var data_rank = merged.sort(function(a,b){return b.avg_score-a.avg_score;}).slice(0,2000);
+    var data_rank = merged.sort(function(a,b){return b.avg_score-a.avg_score;}).slice(0,2000);
 
-	data = [];
-	data_rank.forEach(function(d){
-	    d.albums.forEach(function(i){
-	        if (!i.hasOwnProperty("artist"))
-	            i.artist = [d.artist];
+    data = [];
+    data_rank.forEach(function(d){
+        d.albums.forEach(function(i){
+            if (!i.hasOwnProperty("artist"))
+                i.artist = [d.artist];
             if (!i.hasOwnProperty("top_chart_position"))
                 i.top_chart_position = 100000;
             if (!i.top_chart_position)
                 i.top_chart_position = 100000;
-	        data = data.concat([i]);
-	    })
-	})
+            data = data.concat([i]);
+        })
+    })
     data.sort(function(a,b){return a.top_chart_position - b.top_chart_position;});
-    data = data.filter(function(d){return d.date.getFullYear() == year;})
+    data = data.filter(function(d){return d.date.getFullYear() == year;});
 
-	var item;
+    var item;
 
-	var tool_tip = d3.tip()
-		.attr("class", "d3-tip")
-		.offset([-8, 0])
-		.html(function(d){
-		return getinfo(d,year)});
+    var tool_tip = d3.tip()
+        .attr("class", "d3-tip")
+        .offset([-8, 0])
+        .html(function(d){
+            return getinfo(d,year)});
 
-	svg_rank.call(tool_tip);
+    svg_rank.call(tool_tip);
 
-	svg_rank.selectAll("circles")
-		.data(data)
-		.enter().append("g")
-		.attr("class", function(d){
+    svg_rank.selectAll("circles")
+        .data(data)
+        .enter().append("g")
+        .attr("class", function(d){
             if(chosen_artists.indexOf(d.artist[0])<0) return "circles";
             else { return "chosen circles";}
         })
-		.append("circle")
-		.attr("cx", function (d) {
-		    score = format(d.score);
-		    if(d.score >= 7 && d.date.getFullYear()==year){
-		        item = d;
-		        intervals[score*10-70] += 1;
-		        return intervals[score*10-70]*10 + padding +10;
-		    }
-		})
-		.attr("cy", function (d) {
-		    if(d.score >= 7)
-		        return yscale(format(d.score));
-		})
-		.attr("r", function (d) {
-		    if(d.score >= 7)
-		        return "4.5";
-		})
-		.style("fill",function(d){
-		    if( d.top_chart_position!=100000){
+        .append("circle")
+        .attr("cx", function (d) {
+            score = format(d.score);
+            if(d.score >= 7 && d.date.getFullYear()==year){
+                item = d;
+                intervals[score*10-70] += 1;
+                return intervals[score*10-70]*10 + padding +10;
+            }
+        })
+        .attr("cy", function (d) {
+            if(d.score >= 7)
+                return yscale(format(d.score));
+        })
+        .attr("r", function (d) {
+            if(d.score >= 7)
+                return "4.5";
+        })
+        .style("fill",function(d){
+            if( d.top_chart_position!=100000){
                 //console.log(parseInt(d.top_chart_position/40));
                 positions[parseInt(d.top_chart_position/40)]+=1;
-		        return colorScale(Number(d.top_chart_position));
-		    }
-		    else{
-                positions[5] += 1;
-		        return "grey";
+                return colorScale(Number(d.top_chart_position));
             }
-		})
-		.on('mouseover', tool_tip.show)
-		.on('mouseout', tool_tip.hide);
+            else{
+                positions[5] += 1;
+                return "grey";
+            }
+        })
+        .on('mouseover', tool_tip.show)
+        .on('mouseout', tool_tip.hide);
     //console.log(positions);
 
-	svg_rank.selectAll("rects")
-		.data(legend)
-		.enter().append("g")
-		.attr("class","rect")
-		.append("rect")
-		.attr("x",function(d,i){return 40*i+60;})
-		.attr("y","460")
-		.attr("width","40")
-		.attr("height","10")
-		.style("fill",function(d){return colorScale(d);});
+    svg_rank.selectAll("rects")
+        .data(legend)
+        .enter().append("g")
+        .attr("class","rect")
+        .append("rect")
+        .attr("x",function(d,i){return 40*i+60;})
+        .attr("y","460")
+        .attr("width","40")
+        .attr("height","10")
+        .style("fill",function(d){return colorScale(d);});
 
-	svg_rank.selectAll("legend")
-		.data(legend)
-		.enter().append("g")
-		.append("text")
-		.attr("x",function(d,i){return 40*i+60;})
-		.attr("y","480")
-		.text(function(d,i){return d;})
-		.style("text-anchor", "left")
-		.style("alignment-baseline","center")
-		.style("font-size","10");
+    svg_rank.selectAll("legend")
+        .data(legend)
+        .enter().append("g")
+        .append("text")
+        .attr("x",function(d,i){return 40*i+60;})
+        .attr("y","480")
+        .text(function(d,i){return d;})
+        .style("text-anchor", "left")
+        .style("alignment-baseline","center")
+        .style("font-size","10");
 
     svg_rank.selectAll(".chosen circle")
         .transition()
@@ -420,9 +421,9 @@ function rank(){
         .on("start", function repeat() {
             d3.active(this)
                 .style("r","3")
-              .transition()
+                .transition()
                 .style("r","5")
-              .transition()
+                .transition()
                 .on("start", repeat);
         });
 }
@@ -445,7 +446,7 @@ function getfavorite(item){
     info += "<p>Year: "+ item.date.getFullYear()+ "</p>";
     info += "<p>Score: "+ item.score + "</p>";
     if(item.best_new_music)
-    	info += "<b><p>Best New Music</b></p>";
+        info += "<b><p>Best New Music</b></p>";
     if(item.top_chart_position!=100000)
         info += "<p>Top Position:" + item.top_chart_position + "</p>";
 
@@ -457,7 +458,7 @@ function getArtist(item){
 
     info += "Name: "+ item.artist + "<br>";
     info += "Average score: "+ item.avg_score.toFixed(2) + "<br>";
-    info += "Number of albums been on top chart: "+ item.num_top_charted + "<br>";
+    info += "Portion of albums been on top chart: "+ item.num_top_charted + " of " + item.albums.length + "<br>";
     info += "Highest Position: " + item.top_chart_position;
 
     return info;
@@ -466,14 +467,15 @@ function getArtist(item){
 function draw_top_charters(){
     //console.log("Boris");
 
-    var svg = d3.select("#top_charter")
+    var svg = d3.select("#top_charter");
     svg.selectAll("*").remove();
 
     var width = svg.attr("width");
     var height = svg.attr("height");
-    var padding = 40;
+    var padding = 60;
 
     var dataset = [];
+    var score_range = [10, 0];
     var position_quantity = [];
     while(position_quantity.length <= 200){
         position_quantity.push(0);
@@ -484,10 +486,18 @@ function draw_top_charters(){
             if(Number.isInteger(parseInt(merged[i]["top_chart_position"]))){
                 dataset.push(merged[i]);
                 position_quantity[parseInt(merged[i]["top_chart_position"])]++;
+                if(merged[i]["avg_score"].toFixed(2) < score_range[0]){
+                    score_range[0] = merged[i]["avg_score"].toFixed(2);
+                }
+                if(merged[i]["avg_score"].toFixed(2) > score_range[1]){
+                    score_range[1] = merged[i]["avg_score"].toFixed(2);
+                }
             }
         }
     }
     var position_counter = position_quantity.slice();
+    score_range[0] = Math.floor(score_range[0]);
+    score_range[1] = Math.floor(score_range[1]);
 
     var yScale = d3.scaleLinear()
         .domain([100,1])
@@ -497,6 +507,13 @@ function draw_top_charters(){
     svg.append("g")
         .attr("transform","translate("+padding+",0)")
         .call(yAxis);
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Ranking");
 
     var tool_tip = d3.tip()
         .attr("class", "d3-tip")
@@ -504,6 +521,15 @@ function draw_top_charters(){
         .html(function(d){
             return getArtist(d)
         });
+
+    var colorScale = d3.scaleLinear()
+        .domain([score_range[0],score_range[1]])
+        .range(['#f2f2f2', '#ff0000']);
+        //.range(['#ffeda0', '#f03b20']);
+
+    var legend = d3.range(score_range[0], score_range[1], 1);
+
+
 
     svg.call(tool_tip);
 
@@ -521,26 +547,50 @@ function draw_top_charters(){
             return padding + (15 * (position_quantity[position] - position_counter[position]))
         })
         .attr("cy", function (d) {
-                return yScale(d["top_chart_position"]);
+            return yScale(d["top_chart_position"]);
         })
         .attr("r", "4")
-        .style("fill", "white")
-        .style("stroke", "black")
-        .style("stroke-width", "1px")
+        .style("fill", function(d){
+            return colorScale(d["avg_score"])
+        })
         .on('mouseover', tool_tip.show)
         .on('mouseout', tool_tip.hide);
 
     svg.selectAll(".chosen circle")
         .transition()
-        .duration(1000)
+        .duration(500)
         .on("start", function repeat() {
             d3.active(this)
+                .style("fill","orange")
+                .attr("r", 10)
+                .transition()
                 .style("fill","white")
-              .transition()
-                .style("fill","blue")
-              .transition()
+                .attr("r", 4)
+                .transition()
                 .on("start", repeat);
         });
+
+    svg.selectAll("rects")
+        .data(legend)
+        .enter().append("g")
+        .attr("class","rect")
+        .append("rect")
+        .attr("x",function(d,i){return 40*i+60;})
+        .attr("y",0)
+        .attr("width","40")
+        .attr("height","10")
+        .style("fill",function(d){return colorScale(d);});
+
+    svg.selectAll("legend")
+        .data(legend)
+        .enter().append("g")
+        .append("text")
+        .attr("x",function(d,i){return 40*i+60;})
+        .attr("y", 20)
+        .text(function(d,i){return d;})
+        .style("text-anchor", "left")
+        .style("alignment-baseline","center")
+        .style("font-size","10");
 }
 
 function showpie(data){
@@ -566,11 +616,11 @@ function showpie(data){
         .attr("transform","translate(50,250)");
 
     pies_1.append("path")
-    	.transition(1000)
-    	.attr('d',arc)
-    	.attr("fill",function(d,i){
-        	return color[4-i];
-    	});
+        .transition(1000)
+        .attr('d',arc)
+        .attr("fill",function(d,i){
+            return color[4-i];
+        });
 
     percentage = d3.sum(data.slice(0,5));
 
@@ -582,11 +632,11 @@ function showpie(data){
         .attr("transform","translate(50,100)");
 
     pies_2.append("path")
-      .transition(1000)
-      .attr('d',arc)
-      .attr("fill",function(d,i){
-           return exist[i];
-      });
+        .transition(1000)
+        .attr('d',arc)
+        .attr("fill",function(d,i){
+            return exist[i];
+        });
 
     svg_pie.append("text")
         .attr("x","150")
@@ -613,18 +663,18 @@ function showpie(data){
 
     positions.slice(0,5).forEach(function(d,i){
         svg_pie.append("rect")
-        .attr("x","120")
-        .attr("y", 187.5+i*30)
-        .attr("width","15")
-        .attr("height","15")
-        .style("fill",color[4-i]);
+            .attr("x","120")
+            .attr("y", 187.5+i*30)
+            .attr("width","15")
+            .attr("height","15")
+            .style("fill",color[4-i]);
 
-    svg_pie.append("text")
-        .attr("x","140")
-        .attr("y", 200+i*30)
-        .text(d3.format(".1f")(d/percentage*100) + "% in top " + i*40+ "-" +(i+1)*40)
-        .style("text-anchor", "left")
-        .style("alignment-baseline","center")
-        .style("font-size","15");
+        svg_pie.append("text")
+            .attr("x","140")
+            .attr("y", 200+i*30)
+            .text(d3.format(".1f")(d/percentage*100) + "% in top " + i*40+ "-" +(i+1)*40)
+            .style("text-anchor", "left")
+            .style("alignment-baseline","center")
+            .style("font-size","15");
     })
 }
