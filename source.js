@@ -284,8 +284,7 @@ function renderArtistModule(div, artist) {
 	var tool_tip = d3.tip()
 		.attr("class", "d3-tip")
 		.offset([-8, 0])
-		.html(function(d){
-			return getfavorite(d);});
+		.html(function(d){ return getfavorite(d); });
 
 	svg.call(tool_tip);
 	svg.selectAll("circles")
@@ -302,7 +301,6 @@ function renderArtistModule(div, artist) {
 		})
 		.on('mouseover', tool_tip.show)
 		.on('mouseout', tool_tip.hide);
-
 }
 
 function rank(){
@@ -311,7 +309,7 @@ function rank(){
 
 	var width = svg_rank.attr("width");
 	var height = svg_rank.attr("height");
-	var padding = 40;
+	var padding = 75;
 
 	var intervals = new Array(31).fill(0);
 	positions.fill(0);
@@ -381,7 +379,6 @@ function rank(){
 		})
 		.style("fill",function(d){
 			if( d.top_chart_position!=100000){
-				//console.log(parseInt(d.top_chart_position/40));
 				positions[parseInt(d.top_chart_position/40)]+=1;
 				return colorScale(Number(d.top_chart_position));
 			}
@@ -392,15 +389,35 @@ function rank(){
 		})
 		.on('mouseover', tool_tip.show)
 		.on('mouseout', tool_tip.hide);
-	//console.log(positions);
+
+	svg_rank.append("text").attr("class", "graphLabels")
+		.attr("transform", "rotate(-90)")
+		.attr("y", 20)
+		.attr("x",0 - (height / 2))
+		.attr("dy", "1em")
+		.style("text-anchor", "middle")
+		.text("Pitchfork Score");
+
+	svg_rank.append("text").attr("class", "graphLabels")
+		.attr("x", "260")
+		.attr("y", "30")
+		.text("Albums")
+		.style("text-anchor", "middle")
+
+	svg_rank.append("text").attr("class", "graphLabels")
+		.attr("y", 400)
+		.attr("x", 260)
+		.attr("dy", "1em")
+		.style("text-anchor", "middle")
+		.text("Peak Billboard 200 Position");
 
 	svg_rank.selectAll("rects")
 		.data(legend)
 		.enter().append("g")
 		.attr("class","rect")
 		.append("rect")
-		.attr("x",function(d,i){return 40*i+60;})
-		.attr("y","460")
+		.attr("x",function(d,i){return 40*(9-i)+60;})
+		.attr("y","420")
 		.attr("width","40")
 		.attr("height","10")
 		.style("fill",function(d){return colorScale(d);});
@@ -409,10 +426,10 @@ function rank(){
 		.data(legend)
 		.enter().append("g")
 		.append("text")
-		.attr("x",function(d,i){return 40*i+60;})
-		.attr("y","480")
+		.attr("x",function(d,i){return 40*(9-i)+100;})
+		.attr("y","440")
 		.text(function(d,i){return d;})
-		.style("text-anchor", "left")
+		.style("text-anchor", "right")
 		.style("alignment-baseline","center")
 		.style("font-size","10");
 
@@ -443,7 +460,6 @@ function getinfo(item,time){
 
 function getfavorite(item){
 	var info = "";
-	//console.log(item);
 
 	info += "<p><i><b> "+ item.album + "</i></b></p>";
 	//info += "<p>Year: "+ item.date.getFullYear()+ "</p>";
@@ -636,21 +652,21 @@ function showpie(data){
 			return exist[i];
 		});
 
-	svg_pie.append("text")
+	svg_pie.append("text").attr("class", "graphLabels")
 		.attr("x","140")
 		.attr("y","90")
 		.text("% of reviewed albums")
 		.style("text-anchor", "left")
 		.style("alignment-baseline","center")
-		.style("font-size","14");
+		.style("font-size","9");
 
-	svg_pie.append("text")
+	svg_pie.append("text").attr("class", "graphLabels")
 		.attr("x","140")
 		.attr("y","105")
 		.text("on Billboard Top 200")
 		.style("text-anchor", "left")
 		.style("alignment-baseline","center")
-		.style("font-size","14");
+		.style("font-size","9");
 
 	svg_pie.append("text").attr("class","exposeText")
 		.attr("x","10")
@@ -663,7 +679,7 @@ function showpie(data){
 	svg_pie.append("text").attr("class","exposeText")
 		.attr("x","10")
 		.attr("y","166")
-		.text(d3.format(".2f")(percentage/data[5]*100) + "% of albums reviwed by Pitchfork")
+		.text(d3.format(".2f")(percentage/data[5]*100) + "% of albums reviewed by Pitchfork")
 		.style("text-anchor", "left")
 		.style("alignment-baseline","center")
 
@@ -691,13 +707,13 @@ function showpie(data){
 			.attr("height","15")
 			.style("fill",color[4-i]);
 
-		svg_pie.append("text")
+		svg_pie.append("text").attr("class", "graphLabels")
 			.attr("x","140")
 			.attr("y", 215+i*30)
 			.text("% in rank " + i*40+ "-" +(i+1)*40 + " of Billboard 200")
 			.style("text-anchor", "left")
 			.style("alignment-baseline","center")
-			.style("font-size","15");
+			.style("font-size","9");
 		
 		ranks.push(d3.format(".1f")(d/percentage*100));
 	});
@@ -705,13 +721,12 @@ function showpie(data){
 	svg_pie.append("text").attr("class", "exposeText")
 		.attr("x", "10")
 		.attr("y", "370")
-		.text("Of the " + d3.format(".2f")(percentage/data[5]*100) + "% that charted:")
-
+		.text("Of the " + d3.format(".2f")(percentage/data[5]*100) + "% that were on the Billboard Top 200:");
 
 	ranks.forEach(function(d,i) {
 		svg_pie.append("text").attr("class", "exposeText")
-			.attr("x", "15")
-			.attr("y", 388+i*18)
+			.attr("x", "20")
+			.attr("y", 388+i*20)
 			.text(ranks[i] + "% were in the top " + i*40 + "-" + (i+1)*40);
 	});
 }
