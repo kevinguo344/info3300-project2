@@ -377,7 +377,7 @@ function rank(){
         })
         .attr("r", function (d) {
             if(d.score >= 7)
-                return "4.5";
+                return "4";
         })
         .style("fill",function(d){
             if( d.top_chart_position!=100000){
@@ -418,12 +418,14 @@ function rank(){
 
     svg_rank.selectAll(".chosen circle")
         .transition()
-        .duration(1000)
+        .duration(500)
         .on("start", function repeat() {
             d3.active(this)
-                .style("r","3")
+                .style("r","4")
+                .style("fill","white")
                 .transition()
-                .style("r","5")
+                .style("r","10")
+                .style("fill",function(d) {return colorScale(d.top_chart_position);})
                 .transition()
                 .on("start", repeat);
         });
@@ -524,13 +526,12 @@ function draw_top_charters(){
         });
 
     var colorScale = d3.scaleLinear()
-        .domain([score_range[0],score_range[1]])
-        .range(['#f2f2f2', '#ff0000']);
+        .domain([score_range[0], score_range[1]])
+        //.range(['#ffffe5','#fff7bc','#fee391','#fec44f','#fe9929','#ec7014','#cc4c02','#8c2d04']);
+        .range(['#f2f2f2', '#f00000']);
         //.range(['#ffeda0', '#f03b20']);
 
     var legend = d3.range(score_range[0], score_range[1], 1);
-
-
 
     svg.call(tool_tip);
 
