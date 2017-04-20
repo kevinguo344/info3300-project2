@@ -1,3 +1,9 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
 html{
 	font-family: 'Poppins', sans-serif;
 	font-family: 'Neuton', serif;
@@ -5,11 +11,35 @@ html{
 h1, h2, h3{
 	font-family: 'Neuton';
 }
-
+h1{
+	line-height: 500px;
+}
+h2{
+	text-align: center;
+}
 p{
 	font-family: 'Poppins';
 }
 
+.header{
+    margin: 0;
+    background-image: url("/images/coverimg.jpg");
+    height: 600px;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    text-align: center;
+	vertical-align: middle;
+	color: white;
+}
+.select{
+	height: 48px;
+	padding: 12px;
+	margin: 12px;
+	text-align: center;
+	//float: left
+}
 .section{
 	width: 80%;
 	margin: 0 auto;

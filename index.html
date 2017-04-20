@@ -12,24 +12,33 @@
 <body>
 <div class="header">
 	<h1>Pitchfork vs. The People</h1>
+	<p>By Boris Chan (bkc38), Kevin Guo (kg344), and Yue Shi (ys764)</p>
 </div>
 <div class="content">
-	<div class="section" id="favorites">
+	<div class = "section" id="overview">
+		<h2>Overview</h2>
+		<p>Founded in 1999, <a href="http://pitchfork.com/">Pitchfork</a> is a music review website, scoring new music on a scale of 1 to 10. Pitchfork has become a tastemaker of the independent music scene, helping popularize artists such as Arcade Fire and Bon Iver. A glowing review could from the site could launch an unknown artist into stardom while a scathing review could destroy an acclaimed career in what is known as the <a href="https://www.wired.com/2006/09/pitchfork/">Pitchfork Effect</a>. This project is meant to explore not only Pitchfork's tastes over the years but also how aligned it is to the music tastes of the mainstream.</p>
+	</div>
+	<div class = "section" id="favorites">
 		<h2>Pitchfork's Favorite Artists</h2>
 		<p>Artists that have the highest average Pitchfork scores.</p>
 	</div>
-	<div class="section"><button id="by_artist">Top Charters</button><button id="by_album">Top Albums</button></div>
+	<div class = "section">
+		<button class = "select" id = "by_artist">Overall</button>
+		<button class = "select" id = "by_album">By Year</button>
+	</div>
 	<div class="section" id="charters">
 		<h2>Pitchfork Artists in Billboard Rankings</h2>
 		<p>Where artists have landed on the Billboard Top 100 and how well they've scored with Pitchfork.</p>
-		<svg id = "top_charter" height ="1100" width="800"></svg>
+		<svg id = "key" height = "60" width = "440"></svg>
+		<svg id = "top_charter" height = "1100" width = "800"></svg>
 	</div>
 	<div class="section" id="overTime">
 		<h2>Have Tastes Changed?</h2>
 		<p>See how well the Pitchfork's top scoring albums been represented on the charts over the years.</p>
-		<div id="choice">Year:</div>
-		<svg id="pie" height = "500" width="350"></svg>
-		<svg id="rank" height="500" width="700"></svg>
+		<div id = "choice">Year:</div>
+		<svg id = "pie" height = "500" width = "350"></svg>
+		<svg id = "rank" height = "500" width = "700"></svg>
 	</div>
 </div>
 </body>

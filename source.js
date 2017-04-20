@@ -485,6 +485,8 @@ function getArtist(item){
 
 function draw_top_charters(){
 	var svg = d3.select("#top_charter");
+	var key = d3.select("#key");
+
 	svg.selectAll("*").remove();
 
 	var width = svg.attr("width");
@@ -524,13 +526,20 @@ function draw_top_charters(){
 	svg.append("g")
 		.attr("transform","translate("+padding+",0)")
 		.call(yAxis);
-	svg.append("text")
+
+	svg.append("text").attr("class", "graphLabels")
 		.attr("transform", "rotate(-90)")
 		.attr("y", 0)
 		.attr("x",0 - (height / 2))
 		.attr("dy", "1em")
 		.style("text-anchor", "middle")
 		.text("Peak Billboard 100 Ranking");
+
+	svg.append("text").attr("class", "graphLabels")
+		.attr("y", 10)
+		.attr("x", 400)
+		.style("text-anchor", "middle")
+		.text("Artists");
 
 	var tool_tip = d3.tip()
 		.attr("class", "d3-tip")
@@ -584,26 +593,34 @@ function draw_top_charters(){
 				.on("start", repeat);
 		});
 
-	svg.selectAll("rects")
+	key.append("text").attr("class","graphLabels")
+		.attr("x", "150")
+		.attr("y", "0")
+		.text("Average Pitchfork Score")
+		.style("text-anchor", "middle")
+		.style("alignment-baseline","hanging");
+
+	key.selectAll("rects")
 		.data(legend)
 		.enter().append("g")
 		.attr("class","rect")
 		.append("rect")
-		.attr("x",function(d,i){return 40*i+60;})
-		.attr("y",0)
+		.attr("x",function(d,i){return 40*i;})
+		.attr("y",17)
 		.attr("width","40")
-		.attr("height","10")
+		.attr("height","20")
 		.style("fill",function(d){return colorScale(d);});
 
-	svg.selectAll("legend")
+	key.selectAll("legend")
 		.data(legend)
 		.enter().append("g")
 		.append("text")
-		.attr("x",function(d,i){return 40*i+60;})
-		.attr("y", 20)
+		.attr("x",function(d,i){return 40*i;})
+		.attr("y", 40)
 		.text(function(d,i){return d;})
+		.attr("class", "graphLabels")
 		.style("text-anchor", "left")
-		.style("alignment-baseline","center")
+		.style("alignment-baseline","hanging")
 		.style("font-size","10");
 }
 
