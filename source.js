@@ -6,7 +6,7 @@ var pitchforkArtists = [];
 var years = [];
 var chosen_artists = [];
 var genre;
-	
+
 var charts;
 var chartPositions = [];
 
@@ -442,7 +442,9 @@ function rank(){
 				.style("fill","white")
 				.transition()
 				.style("r","10")
-				.style("fill",function(d) {return colorScale(d.top_chart_position);})
+				.style("fill",function(d) {
+					if( d.top_chart_position!=100000) return colorScale(d.top_chart_position);
+					else return "grey";})
 				.transition()
 				.on("start", repeat);
 		});
@@ -731,7 +733,7 @@ function showpie(data){
 			.style("text-anchor", "left")
 			.style("alignment-baseline","center")
 			.style("font-size","9");
-		
+
 		ranks.push(d3.format(".1f")(d/percentage*100));
 	});
 
